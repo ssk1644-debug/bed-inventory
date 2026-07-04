@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ベッド在庫管理 v3.0 | アスポート</title>
+<style>
+:root{
+  --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
+  --border:#e2e8f0; --border2:#cbd5e1;
+  --accent:#0ea5e9; --accent-dark:#0284c7;
+  --green:#16a34a; --green-bg:#f0fdf4; --green-bd:#bbf7d0;
+  --yellow:#d97706; --yellow-bg:#fffbeb; --yellow-bd:#fde68a;
+  --red:#dc2626; --red-bg:#fef2f2; --red-bd:#fecaca;
+  --purple:#7c3aed; --purple-bg:#f5f3ff; --purple-bd:#ddd6fe;
+  --gray:#64748b; --text:#0f172a; --text2:#475569; --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;min-height:100vh;padding-bottom:40px;}
+
+header{background:var(--white);border-bottom:1px solid var(--border);padding:8px 14px;
+  position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.logo{font-size:15px;font-weight:700;color:var(--accent-dark);}
+.logo small{font-size:11px;color:var(--gray);font-weight:500;margin-left:6px;}
+.hright{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);}
+#sync-status{font-size:12px;font-weight:600;}
+.sync-btn{border:1px solid var(--border2);background:var(--surface);border-radius:8px;
+  padding:4px 10px;font-size:12px;cursor:pointer;}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;background:var(--white);
+  border-bottom:1px solid var(--border);position:sticky;top:41px;z-index:49;-webkit-overflow-scrolling:touch;}
+.tab-btn{flex:0 0 auto;border:1px solid var(--border2);background:var(--surface);color:var(--text2);
+  border-radius:20px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.tab-btn .cnt{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;
+  background:rgba(255,255,255,.85);color:var(--accent-dark);font-size:11px;font-weight:700;}
+.tab-btn:not(.active) .cnt{background:var(--border);color:var(--text2);}
+
+main{max-width:860px;margin:0 auto;padding:14px;}
+.page{display:none;}
+.page.active{display:block;}
+.section-title{font-size:15px;font-weight:700;margin-bottom:12px;}
+.hint{font-size:12px;color:var(--gray);margin-bottom:12px;line-height:1.6;}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.card.urgent{border-color:var(--red-bd);background:var(--red-bg);}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.card-name{font-size:14px;font-weight:700;line-height:1.5;}
+.card-meta{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.7;}
+.card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;white-space:nowrap;}
+.b-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.b-yellow{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-bd);}
+.b-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+.b-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-bd);}
+.b-gray{background:var(--surface);color:var(--gray);border:1px solid var(--border2);}
+
+.btn{border:none;border-radius:8px;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-sm{padding:6px 10px;font-size:12px;}
+.btn-blue{background:var(--accent);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-gray{background:var(--surface);color:var(--text2);border:1px solid var(--border2);}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn:active{opacity:.8;}
+
+.empty{text-align:center;padding:36px 10px;color:var(--gray);font-size:13px;}
+.empty .icon{font-size:34px;margin-bottom:8px;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.field input[type=text],.field textarea,.field select{width:100%;border:1px solid var(--border2);
+  border-radius:8px;padding:9px 11px;font-size:14px;background:#fff;font-family:inherit;}
+.chips{display:flex;gap:7px;flex-wrap:wrap;}
+.chip{border:1px solid var(--border2);background:#fff;border-radius:18px;padding:7px 13px;
+  font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+.step{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:10px;}
+.step.off{opacity:.45;pointer-events:none;}
+.step-title{font-size:13px;font-weight:700;margin-bottom:9px;}
+.step-title .num{display:inline-block;background:var(--accent);color:#fff;border-radius:50%;
+  width:20px;height:20px;line-height:20px;text-align:center;font-size:11px;margin-right:7px;}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;
+  align-items:flex-start;justify-content:center;padding:30px 14px;overflow-y:auto;}
+.modal-bg.show{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:460px;}
+.modal h3{font-size:15px;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px;}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--text);color:#fff;border-radius:10px;padding:11px 18px;font-size:13px;
+  font-weight:600;z-index:200;opacity:0;transition:all .25s;max-width:90vw;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.green{background:var(--green);}
+.toast.red{background:var(--red);}
+.toast.orange{background:var(--yellow);}
+
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:#fff;font-size:13px;}
+.mrow .del{color:var(--red);cursor:pointer;font-weight:700;padding:2px 7px;}
+.mgroup{margin-bottom:16px;}
+.mgroup-title{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+.addrow{display:flex;gap:6px;margin-top:6px;}
+.addrow input{flex:1;border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.0</small></div>
+    <div class="hright">
+      <span id="hdate"></span>
+      <span id="sync-status">--</span>
+      <button class="sync-btn" onclick="manualSync()">🔄 同期</button>
+    </div>
+  </div>
+</header>
+
+<div class="tabs" id="tabbar">
+  <button class="tab-btn active" data-tab="available" onclick="showTab('available',this)">✅ 出荷可能<span class="cnt" id="cnt-available">0</span></button>
+  <button class="tab-btn" data-tab="pickup" onclick="showTab('pickup',this)">🚚 引き上げ予定<span class="cnt" id="cnt-pickup">0</span></button>
+  <button class="tab-btn" data-tab="storage" onclick="showTab('storage',this)">🧼 保管・清掃中<span class="cnt" id="cnt-storage">0</span></button>
+  <button class="tab-btn" data-tab="return" onclick="showTab('return',this)">📥 返却受付</button>
+  <button class="tab-btn" data-tab="trash" onclick="showTab('trash',this)">🗑 ゴミ箱<span class="cnt" id="cnt-trash">0</span></button>
+  <button class="tab-btn" data-tab="settings" onclick="showTab('settings',this)">⚙️ 設定</button>
+</div>
+
+<main>
+
+<!-- 出荷可能 -->
+<div class="page active" id="tab-available">
+  <div class="section-title">✅ 出荷可能なベッド</div>
+  <div class="hint">予約が入ったベッドには 📌 予約バッジが付きます。出荷したら「出荷済み」を押してください（ゴミ箱に30日間保管されます）。</div>
+  <div id="available-list"></div>
+</div>
+
+<!-- 引き上げ予定 -->
+<div class="page" id="tab-pickup">
+  <div class="section-title">🚚 引き上げ予定の登録</div>
+  <div class="card">
+    <div class="field"><label>件名（利用者名など）</label>
+      <input type="text" id="pk-subject" placeholder="例）山田様 ベッド引き上げ"></div>
+    <div class="field"><label>担当者</label>
+      <div class="chips" id="pk-staff-chips"></div>
+      <input type="text" id="pk-staff-free" placeholder="その他の担当者名（自由入力）" style="margin-top:7px;border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;width:100%;">
+    </div>
+    <div class="field"><label>引き上げ時期（あいまいでOK）</label>
+      <div class="chips" id="pk-date-chips"></div>
+      <input type="text" id="pk-date-free" placeholder="例）来週前半、7/10ごろ" style="margin-top:7px;border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;width:100%;">
+    </div>
+    <button class="btn btn-blue" onclick="addPickup()">➕ 引き上げ予定に追加</button>
+  </div>
+  <div class="section-title" style="margin-top:18px;">📋 引き上げ予定リスト</div>
+  <div id="pickup-list"></div>
+</div>
+
+<!-- 保管・清掃中 -->
+<div class="page" id="tab-storage">
+  <div class="section-title">🧼 一時保管・清掃中</div>
+  <div class="hint">🔥マークは「出荷可能在庫がゼロの機種」です。優先的に清掃してください。<br>流れ：一時保管 →「清掃開始」→ 清掃中 →「清掃完了」→ 出荷可能</div>
+  <div id="storage-list"></div>
+</div>
+
+<!-- 返却受付 -->
+<div class="page" id="tab-return">
+  <div class="section-title">📥 返却ベッドの受付</div>
+  <div class="hint">上から順に選ぶだけで登録できます。登録すると「一時保管」に入ります。</div>
+
+  <div class="step" id="st1">
+    <div class="step-title"><span class="num">1</span>メーカー</div>
+    <div class="chips" id="r-maker"></div>
+  </div>
+  <div class="step off" id="st2">
+    <div class="step-title"><span class="num">2</span>機種</div>
+    <div class="chips" id="r-series"></div>
+  </div>
+  <div class="step off" id="st3">
+    <div class="step-title"><span class="num">3</span>個体メモ（任意）</div>
+    <input type="text" id="r-memo" placeholder="例）管理番号、シール色 など" style="width:100%;border:1px solid var(--border2);border-radius:8px;padding:9px 11px;font-size:14px;">
+  </div>
+  <div class="step off" id="st4">
+    <div class="step-title"><span class="num">4</span>モーター数</div>
+    <div class="chips" id="r-motor"></div>
+  </div>
+  <div class="step off" id="st5">
+    <div class="step-title"><span class="num">5</span>幅</div>
+    <div class="chips" id="r-width"></div>
+  </div>
+  <div class="step off" id="st6">
+    <div class="step-title"><span class="num">6</span>状態</div>
+    <div class="chips" id="r-state"></div>
+  </div>
+  <div class="step off" id="st7">
+    <div class="step-title"><span class="num">7</span>費用区分</div>
+    <div class="chips" id="r-cost"></div>
+  </div>
+  <div class="step off" id="st8">
+    <div class="step-title"><span class="num">8</span>特記事項（任意）</div>
+    <input type="text" id="r-note" placeholder="例）ボード傷あり、部品欠品 など" style="width:100%;border:1px solid var(--border2);border-radius:8px;padding:9px 11px;font-size:14px;">
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-green" onclick="registerReturn()">✅ 登録して一時保管へ</button>
+      <button class="btn btn-gray" onclick="resetReturn()">やり直す</button>
+    </div>
+  </div>
+</div>
+
+<!-- ゴミ箱 -->
+<div class="page" id="tab-trash">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div class="section-title" style="margin:0;">🗑 ゴミ箱</div>
+    <button class="btn btn-red btn-sm" onclick="emptyTrash()">全て完全削除</button>
+  </div>
+  <div class="hint">出荷済み・削除したベッドは30日間ここに保管され、復元できます。30日を過ぎると自動で完全削除されます。</div>
+  <div id="trash-list"></div>
+</div>
+
+<!-- 設定 -->
+<div class="page" id="tab-settings">
+  <div class="section-title">⚙️ 設定</div>
+
+  <div class="card">
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
+    <div class="card-meta">
+      バージョン: <b>v3.0</b><br>
+      データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
+      通信方式: JSONP（読込）+ POST（保存）<br>
+      担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px;">マスター同期（メーカー・機種）</div>
+    <div class="card-meta" style="margin-bottom:10px;">機種を追加・削除したら「全端末に共有」を押すと、他の端末にも反映されます。</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-blue btn-sm" onclick="pushMaster()">📤 全端末に共有</button>
+      <button class="btn btn-gray btn-sm" onclick="pullMaster()">📥 最新を取得</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;">メーカー・機種の編集</div>
+    <div id="master-editor"></div>
+    <div class="addrow">
+      <input type="text" id="new-maker" placeholder="新しいメーカー名">
+      <button class="btn btn-blue btn-sm" onclick="addMaker()">追加</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px;">メンテナンス</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-gray btn-sm" onclick="clearCache()">🗑 キャッシュ削除して再読込</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- 予約モーダル -->
+<div class="modal-bg" id="modal-reserve">
+  <div class="modal">
+    <h3>📌 出荷予約</h3>
+    <div class="field"><label>件名（利用者名など）</label>
+      <input type="text" id="rv-subject" placeholder="例）田中様 新規レンタル"></div>
+    <div class="field"><label>担当者</label>
+      <div class="chips" id="rv-staff-chips"></div>
+      <input type="text" id="rv-staff-free" placeholder="その他（自由入力）" style="margin-top:7px;border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;width:100%;">
+    </div>
+    <div class="field"><label>出荷時期（あいまいでOK）</label>
+      <div class="chips" id="rv-date-chips"></div>
+      <input type="text" id="rv-date-free" placeholder="例）来週月曜、7月中旬" style="margin-top:7px;border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;width:100%;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('modal-reserve')">キャンセル</button>
+      <button class="btn btn-purple" onclick="saveReserve()">予約する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 編集モーダル -->
+<div class="modal-bg" id="modal-edit">
+  <div class="modal">
+    <h3>✏️ ベッド情報の編集</h3>
+    <div class="field"><label>メーカー</label><select id="ed-maker" onchange="edMakerChanged()"></select></div>
+    <div class="field"><label>機種</label><select id="ed-series"></select></div>
+    <div class="field"><label>モーター数</label><select id="ed-motor"></select></div>
+    <div class="field"><label>幅</label><select id="ed-width"></select></div>
+    <div class="field"><label>状態</label><select id="ed-state"></select></div>
+    <div class="field"><label>費用区分</label><select id="ed-cost"></select></div>
+    <div class="field"><label>個体メモ</label><input type="text" id="ed-memo"></div>
+    <div class="field"><label>特記事項</label><input type="text" id="ed-note"></div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('modal-edit')">キャンセル</button>
+      <button class="btn btn-blue" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* =====================================================
+   0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
+   ===================================================== */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
+const APP_VERSION = 'v3.0';
+const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
+const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
+const STATES = ['良好','傷あり','要点検'];
+const COSTS = ['保険対応のみ','自費対応可'];
+const MOTOR_OPTS = ['1','2','2モーション','3'];
+const WIDTH_OPTS = ['83','91','100','可変'];
+const TRASH_DAYS = 30;
+
+const DEFAULT_MASTER = {
+  'パラマウントベッド': {
+    'クオラONE': {motors:['1','2','2モーション','3'], widths:['83','91','可変'], defWidth:'可変', defCost:'保険対応のみ'},
+    'クオラ':    {motors:['1','2','3'], widths:['83','91']},
+    '楽匠Z':     {motors:['1','2','3'], widths:['83','91','100']},
+    '楽匠S':     {motors:['1','2','3'], widths:['83','91','100']},
+    '楽匠':      {motors:['1','2','3'], widths:['83','91','100']},
+    'アウラ21':  {motors:['1','2','3'], widths:['83','91']},
+    'キューマアウラ': {motors:['1','2','3'], widths:['83','91']}
+  },
+  'シーホネンス': {
+    'コア': {motors:['1','2','3'], widths:['83','91','100']},
+    '和夢': {motors:['1','2','3'], widths:['83','91','100']}
+  },
+  'プラッツ': {
+    'ミオレット': {motors:['1','2','3'], widths:['83','91','100']}
+  },
+  'パナソニック': {
+    'コンフォート': {motors:['1','2','3'], widths:['83','91','100']}
+  },
+  'モルテン': {
+    'モーニングライト100': {motors:['1'], widths:['100'], defWidth:'100'}
+  }
+};
+
+// ---- 可変の状態（関数呼び出しより前に全部宣言）----
+let beds = [];                       // 全ベッド（status: pickup/storage/cleaning/available/trashed）
+let MASTER = DEFAULT_MASTER;         // メーカー・機種マスター
+let deletedIds = [];                 // 完全削除したID [{id, at}]
+let jsonpCounter = 0;                // JSONPコールバック連番
+let saveTimer = null;                // 保存デバウンス用
+let syncTimer = null;                // 自動同期タイマー
+let isSyncing = false;               // 同期中フラグ
+let reserveTargetId = null;          // 予約モーダル対象
+let editTargetId = null;             // 編集モーダル対象
+let R = null;                        // 返却受付フローの入力状態
+
+// ---- ローカルキャッシュ読込（宣言直後に安全に実行）----
+try { beds = JSON.parse(localStorage.getItem('asport-v3-beds') || '[]'); } catch(e){ beds = []; }
+try { MASTER = JSON.parse(localStorage.getItem('asport-v3-master') || 'null') || DEFAULT_MASTER; } catch(e){ MASTER = DEFAULT_MASTER; }
+try { deletedIds = JSON.parse(localStorage.getItem('asport-v3-deleted') || '[]'); } catch(e){ deletedIds = []; }
+R = newReturnState();
+
+/* =====================================================
+   1) 汎用ヘルパー
+   ===================================================== */
+function newReturnState(){ return {maker:null, series:null, motor:null, width:null, state:null, cost:null}; }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmt(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}) + ' ' +
+         d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+}
+function toast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type||'green') + ' show';
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function bedName(b){
+  const parts = [];
+  parts.push(b.maker || 'メーカー未設定');
+  if(b.series) parts.push(b.series);
+  if(b.motor) parts.push(b.motor + 'モーター');
+  if(b.width) parts.push(b.width === '可変' ? '幅可変' : b.width + 'cm');
+  return parts.join(' ');
+}
+function isDeleted(id){ return deletedIds.some(d=>d.id===id); }
+function markDeleted(id){
+  deletedIds.push({id:id, at:Date.now()});
+  const limit = Date.now() - TRASH_DAYS*24*60*60*1000;
+  deletedIds = deletedIds.filter(d=>d.at>limit);
+  localStorage.setItem('asport-v3-deleted', JSON.stringify(deletedIds));
+}
+function cacheLocal(){
+  localStorage.setItem('asport-v3-beds', JSON.stringify(beds));
+}
+function setSync(msg, color){
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.style.color = color==='green' ? 'var(--green)' : color==='orange' ? 'var(--yellow)' : 'var(--gray)';
+}
+
+/* =====================================================
+   2) GAS通信（読込=JSONP / 保存=POST no-cors）
+   ===================================================== */
+function jsonp(params, cb){
+  const name = 'jsonpCb' + (++jsonpCounter);
+  let done = false;
+  const s = document.createElement('script');
+  const timer = setTimeout(()=>{ if(!done){ done=true; cleanup(); cb(new Error('timeout')); } }, 15000);
+  window[name] = function(data){
+    if(done) return;
+    done = true; clearTimeout(timer); cleanup(); cb(null, data);
+  };
+  function cleanup(){ try{ delete window[name]; }catch(e){ window[name]=undefined; } if(s.parentNode) s.parentNode.removeChild(s); }
+  s.onerror = function(){ if(!done){ done=true; clearTimeout(timer); cleanup(); cb(new Error('load failed')); } };
+  s.src = GAS_URL + '?' + params + '&callback=' + name + '&t=' + Date.now();
+  document.body.appendChild(s);
+}
+
+function postGAS(obj){
+  try {
+    fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(obj) });
+  } catch(e) { console.error('POSTエラー', e); }
+}
+
+// リモートとローカルをIDでマージ（新しいupdatedAt優先・完全削除IDは除外）
+function mergeBeds(remote, local){
+  const map = {};
+  (Array.isArray(remote)?remote:[]).forEach(b=>{ if(b && b.id && !isDeleted(b.id)) map[b.id]=b; });
+  (Array.isArray(local)?local:[]).forEach(b=>{
+    if(!b || !b.id || isDeleted(b.id)) return;
+    const ex = map[b.id];
+    if(!ex || (b.updatedAt||'') >= (ex.updatedAt||'')) map[b.id]=b;
+  });
+  return Object.values(map);
+}
+
+// 保存：デバウンス → リモート読込 → マージ → POST
+function scheduleSave(){
+  cacheLocal();
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 900);
+}
+function doSave(){
+  saveTimer = null;
+  setSync('💾 保存中...', 'gray');
+  jsonp('type=beds', function(err, remote){
+    if(!err && Array.isArray(remote)){
+      beds = mergeBeds(remote, beds);
+      cacheLocal();
+    }
+    postGAS({action:'save', beds:beds});
+    setSync('✅ 同期済み', 'green');
+    renderAll();
+  });
+}
+
+function loadFromGAS(silent){
+  if(isSyncing) return;
+  isSyncing = true;
+  if(!silent) setSync('🔄 読み込み中...', 'gray');
+  jsonp('type=beds', function(err, remote){
+    isSyncing = false;
+    if(err || !Array.isArray(remote)){
+      setSync('⚠️ キャッシュ使用中', 'orange');
+      renderAll();
+      return;
+    }
+    beds = mergeBeds(remote, beds);
+    autoPurgeTrash();
+    cacheLocal();
+    setSync('✅ 同期済み', 'green');
+    renderAll();
+  });
+}
+
+function manualSync(){
+  loadFromGAS(false);
+  pullMaster(true);
+  toast('🔄 最新データを取得しています');
+}
+
+function pullMaster(silent){
+  jsonp('type=master', function(err, m){
+    if(!err && m && typeof m === 'object'){
+      MASTER = m;
+      localStorage.setItem('asport-v3-master', JSON.stringify(MASTER));
+      buildReturnMakers();
+      renderMasterEditor();
+      if(!silent) toast('📥 マスターを更新しました');
+    } else if(!silent){
+      toast('マスターの取得に失敗しました（共有前かも）','orange');
+    }
+  });
+}
+function pushMaster(){
+  localStorage.setItem('asport-v3-master', JSON.stringify(MASTER));
+  postGAS({action:'saveMaster', master:MASTER});
+  toast('📤 マスターを全端末に共有しました');
+}
+
+/* =====================================================
+   3) タブ・描画
+   ===================================================== */
+function showTab(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function availableCount(maker, series){
+  return beds.filter(b=>b.status==='available' && b.maker===maker && b.series===series).length;
+}
+function isUrgent(b){
+  if(b.status!=='storage' && b.status!=='cleaning') return false;
+  if(!b.maker || !b.series) return false;
+  return availableCount(b.maker, b.series) === 0;
+}
+
+function renderAll(){
+  renderAvailable();
+  renderPickup();
+  renderStorage();
+  renderTrash();
+  renderCounts();
+}
+
+function renderCounts(){
+  document.getElementById('cnt-available').textContent = beds.filter(b=>b.status==='available').length;
+  document.getElementById('cnt-pickup').textContent    = beds.filter(b=>b.status==='pickup').length;
+  document.getElementById('cnt-storage').textContent   = beds.filter(b=>b.status==='storage'||b.status==='cleaning').length;
+  document.getElementById('cnt-trash').textContent     = beds.filter(b=>b.status==='trashed').length;
+}
+
+function renderAvailable(){
+  const list = beds.filter(b=>b.status==='available')
+    .sort((a,b)=>(a.maker||'').localeCompare(b.maker||'','ja') || (a.series||'').localeCompare(b.series||'','ja'));
+  const el = document.getElementById('available-list');
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="icon">📭</div>出荷可能なベッドはありません</div>'; return; }
+  el.innerHTML = list.map(b=>{
+    const rv = b.reserved;
+    return `<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${esc(bedName(b))}</div>
+          <div class="card-meta">
+            ${b.memo?('📝 '+esc(b.memo)+'<br>'):''}
+            状態: ${esc(b.state||'—')} ／ ${esc(b.cost||'—')}
+            ${b.note?('<br>⚠️ '+esc(b.note)):''}
+            <br>清掃完了: ${fmt(b.completedAt)}
+          </div>
+          ${rv?`<div style="margin-top:7px;"><span class="badge b-purple">📌 予約: ${esc(rv.subject||'')} ／ ${esc(rv.staff||'')} ／ ${esc(rv.date||'')}</span></div>`:''}
+        </div>
+        <span class="badge b-green">出荷可能</span>
+      </div>
+      <div class="card-actions">
+        ${rv
+          ? `<button class="btn btn-gray btn-sm" onclick="clearReserve('${b.id}')">予約解除</button>`
+          : `<button class="btn btn-purple btn-sm" onclick="openReserve('${b.id}')">📌 予約</button>`}
+        <button class="btn btn-gray btn-sm" onclick="openEdit('${b.id}')">✏️ 編集</button>
+        <button class="btn btn-blue btn-sm" onclick="shipBed('${b.id}')">🚚 出荷済み</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPickup(){
+  const list = beds.filter(b=>b.status==='pickup').sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
+  const el = document.getElementById('pickup-list');
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="icon">🚚</div>引き上げ予定はありません</div>'; return; }
+  el.innerHTML = list.map(b=>`<div class="card">
+    <div class="card-top">
+      <div>
+        <div class="card-name">${esc(b.pickupSubject||'（件名なし）')}</div>
+        <div class="card-meta">
+          担当: ${esc(b.pickupStaff||'—')} ／ 時期: ${esc(b.pickupDate||'未定')}<br>
+          登録: ${fmt(b.createdAt)}
+        </div>
+      </div>
+      <span class="badge b-yellow">引き上げ予定</span>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-green btn-sm" onclick="completePickup('${b.id}')">✅ 引き上げ完了 → 一時保管</button>
+      <button class="btn btn-gray btn-sm" onclick="openEdit('${b.id}')">✏️ 編集</button>
+      <button class="btn btn-red btn-sm" onclick="toTrash('${b.id}')">🗑 削除</button>
+    </div>
+  </div>`).join('');
+}
+
+function renderStorage(){
+  const list = beds.filter(b=>b.status==='storage'||b.status==='cleaning')
+    .sort((a,b)=>{
+      const ua = isUrgent(a)?0:1, ub = isUrgent(b)?0:1;
+      if(ua!==ub) return ua-ub;
+      return (a.updatedAt||'').localeCompare(b.updatedAt||'');
+    });
+  const el = document.getElementById('storage-list');
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="icon">🧼</div>保管・清掃中のベッドはありません</div>'; return; }
+  el.innerHTML = list.map(b=>{
+    const urgent = isUrgent(b);
+    return `<div class="card ${urgent?'urgent':''}">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${urgent?'🔥 ':''}${esc(bedName(b))}</div>
+          <div class="card-meta">
+            ${b.memo?('📝 '+esc(b.memo)+'<br>'):''}
+            状態: ${esc(b.state||'—')} ／ ${esc(b.cost||'—')}
+            ${b.note?('<br>⚠️ '+esc(b.note)):''}
+            ${urgent?'<br><b style="color:var(--red)">在庫ゼロの機種です。優先清掃！</b>':''}
+          </div>
+        </div>
+        <span class="badge ${b.status==='cleaning'?'b-yellow':'b-gray'}">${b.status==='cleaning'?'清掃中':'一時保管'}</span>
+      </div>
+      <div class="card-actions">
+        ${b.status==='storage'
+          ? `<button class="btn btn-blue btn-sm" onclick="startCleaning('${b.id}')">🧼 清掃開始</button>`
+          : `<button class="btn btn-green btn-sm" onclick="completeCleaning('${b.id}')">✅ 清掃完了 → 出荷可能</button>`}
+        <button class="btn btn-gray btn-sm" onclick="openEdit('${b.id}')">✏️ 編集</button>
+        <button class="btn btn-red btn-sm" onclick="toTrash('${b.id}')">🗑 削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTrash(){
+  const list = beds.filter(b=>b.status==='trashed').sort((a,b)=>(b.trashedAt||'').localeCompare(a.trashedAt||''));
+  const el = document.getElementById('trash-list');
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="icon">🗑</div>ゴミ箱は空です</div>'; return; }
+  el.innerHTML = list.map(b=>{
+    const days = b.trashedAt ? Math.max(0, TRASH_DAYS - Math.floor((Date.now()-new Date(b.trashedAt).getTime())/86400000)) : TRASH_DAYS;
+    return `<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${esc(bedName(b))}</div>
+          <div class="card-meta">
+            ${b.pickupSubject?('件名: '+esc(b.pickupSubject)+'<br>'):''}
+            削除日時: ${fmt(b.trashedAt)} ／ あと <b>${days}日</b> で完全削除
+          </div>
+        </div>
+        <span class="badge b-red">ゴミ箱</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-green btn-sm" onclick="restoreBed('${b.id}')">↩️ 復元</button>
+        <button class="btn btn-red btn-sm" onclick="purgeBed('${b.id}')">完全削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* =====================================================
+   4) 引き上げ予定
+   ===================================================== */
+function buildChips(containerId, items, onSel){
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(v=>`<button type="button" class="chip" data-v="${esc(v)}">${esc(v)}</button>`).join('');
+  el.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click', function(){
+      el.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));
+      this.classList.add('sel');
+      onSel(this.dataset.v);
+    });
+  });
+}
+function chipValue(containerId){
+  const sel = document.querySelector('#'+containerId+' .chip.sel');
+  return sel ? sel.dataset.v : '';
+}
+
+function addPickup(){
+  const subject = document.getElementById('pk-subject').value.trim();
+  if(!subject){ toast('件名を入力してください','red'); return; }
+  const staff = document.getElementById('pk-staff-free').value.trim() || chipValue('pk-staff-chips');
+  const date  = document.getElementById('pk-date-free').value.trim()  || chipValue('pk-date-chips');
+  const now = new Date().toISOString();
+  beds.push({
+    id: uid(), status: 'pickup',
+    pickupSubject: subject, pickupStaff: staff, pickupDate: date || '未定',
+    maker:'', series:'', motor:'', width:'', memo:'', state:'', cost:'', note:'',
+    createdAt: now, updatedAt: now
+  });
+  document.getElementById('pk-subject').value = '';
+  document.getElementById('pk-staff-free').value = '';
+  document.getElementById('pk-date-free').value = '';
+  document.querySelectorAll('#pk-staff-chips .chip, #pk-date-chips .chip').forEach(c=>c.classList.remove('sel'));
+  scheduleSave(); renderAll();
+  toast('🚚 引き上げ予定に追加しました');
+}
+
+function completePickup(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  b.status = 'storage';
+  b.updatedAt = new Date().toISOString();
+  scheduleSave(); renderAll();
+  toast('📦 一時保管に移動しました。機種情報は「編集」で入力できます');
+}
+
+/* =====================================================
+   5) 保管・清掃
+   ===================================================== */
+function startCleaning(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  b.status = 'cleaning';
+  b.updatedAt = new Date().toISOString();
+  scheduleSave(); renderAll();
+  toast('🧼 清掃を開始しました');
+}
+function completeCleaning(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  b.status = 'available';
+  b.completedAt = new Date().toISOString();
+  b.updatedAt = b.completedAt;
+  scheduleSave(); renderAll();
+  toast('✅ 清掃完了！出荷可能になりました');
+}
+
+/* =====================================================
+   6) 出荷可能：予約・出荷
+   ===================================================== */
+function openReserve(id){
+  reserveTargetId = id;
+  document.getElementById('rv-subject').value = '';
+  document.getElementById('rv-staff-free').value = '';
+  document.getElementById('rv-date-free').value = '';
+  buildChips('rv-staff-chips', STAFF, function(){});
+  buildChips('rv-date-chips', DATE_CHIPS, function(){});
+  document.getElementById('modal-reserve').classList.add('show');
+}
+function saveReserve(){
+  const b = beds.find(x=>x.id===reserveTargetId); if(!b) return;
+  const subject = document.getElementById('rv-subject').value.trim();
+  if(!subject){ toast('件名を入力してください','red'); return; }
+  const staff = document.getElementById('rv-staff-free').value.trim() || chipValue('rv-staff-chips');
+  const date  = document.getElementById('rv-date-free').value.trim()  || chipValue('rv-date-chips');
+  b.reserved = {subject:subject, staff:staff, date:date||'未定'};
+  b.updatedAt = new Date().toISOString();
+  closeModal('modal-reserve');
+  scheduleSave(); renderAll();
+  toast('📌 予約しました');
+}
+function clearReserve(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  if(!confirm('この予約を解除しますか？')) return;
+  b.reserved = null;
+  b.updatedAt = new Date().toISOString();
+  scheduleSave(); renderAll();
+  toast('予約を解除しました');
+}
+function shipBed(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  const msg = b.reserved
+    ? '予約（'+ (b.reserved.subject||'') +'）が入っています。\n出荷済みにしてゴミ箱へ移動しますか？'
+    : 'このベッドを出荷済みにしますか？\n（ゴミ箱に30日間保管されます）';
+  if(!confirm(msg)) return;
+  b.prevStatus = b.status;
+  b.status = 'trashed';
+  b.trashedAt = new Date().toISOString();
+  b.updatedAt = b.trashedAt;
+  scheduleSave(); renderAll();
+  toast('🚚 出荷済みにしました（ゴミ箱に30日保管）');
+}
+
+/* =====================================================
+   7) ゴミ箱
+   ===================================================== */
+function toTrash(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  if(!confirm('削除してゴミ箱に移動しますか？\n（30日間は復元できます）')) return;
+  b.prevStatus = b.status;
+  b.status = 'trashed';
+  b.trashedAt = new Date().toISOString();
+  b.updatedAt = b.trashedAt;
+  scheduleSave(); renderAll();
+  toast('🗑 ゴミ箱に移動しました');
+}
+function restoreBed(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  b.status = b.prevStatus || 'storage';
+  b.prevStatus = null;
+  b.trashedAt = null;
+  b.updatedAt = new Date().toISOString();
+  scheduleSave(); renderAll();
+  toast('↩️ 復元しました');
+}
+function purgeBed(id){
+  if(!confirm('完全に削除しますか？この操作は元に戻せません。')) return;
+  beds = beds.filter(b=>b.id!==id);
+  markDeleted(id);
+  scheduleSave(); renderAll();
+  toast('完全に削除しました','red');
+}
+function emptyTrash(){
+  const list = beds.filter(b=>b.status==='trashed');
+  if(!list.length){ toast('ゴミ箱は空です'); return; }
+  if(!confirm('ゴミ箱の '+list.length+' 台を全て完全削除しますか？\nこの操作は元に戻せません。')) return;
+  list.forEach(b=>markDeleted(b.id));
+  beds = beds.filter(b=>b.status!=='trashed');
+  scheduleSave(); renderAll();
+  toast('ゴミ箱を空にしました','red');
+}
+function autoPurgeTrash(){
+  const limit = Date.now() - TRASH_DAYS*24*60*60*1000;
+  const expired = beds.filter(b=>b.status==='trashed' && b.trashedAt && new Date(b.trashedAt).getTime() < limit);
+  if(!expired.length) return;
+  expired.forEach(b=>markDeleted(b.id));
+  beds = beds.filter(b=>!expired.includes(b));
+}
+
+/* =====================================================
+   8) 編集モーダル
+   ===================================================== */
+function fillSelect(id, options, current, allowEmpty){
+  const el = document.getElementById(id);
+  let html = allowEmpty ? '<option value="">（未設定）</option>' : '';
+  html += options.map(o=>`<option value="${esc(o)}" ${o===current?'selected':''}>${esc(o)}</option>`).join('');
+  el.innerHTML = html;
+  if(current && !options.includes(current)){
+    el.innerHTML += `<option value="${esc(current)}" selected>${esc(current)}</option>`;
+  }
+}
+function openEdit(id){
+  const b = beds.find(x=>x.id===id); if(!b) return;
+  editTargetId = id;
+  fillSelect('ed-maker', Object.keys(MASTER), b.maker, true);
+  edMakerChanged(b.series);
+  fillSelect('ed-motor', MOTOR_OPTS, b.motor, true);
+  fillSelect('ed-width', WIDTH_OPTS, b.width, true);
+  fillSelect('ed-state', STATES, b.state, true);
+  fillSelect('ed-cost', COSTS, b.cost, true);
+  document.getElementById('ed-memo').value = b.memo || '';
+  document.getElementById('ed-note').value = b.note || '';
+  document.getElementById('modal-edit').classList.add('show');
+}
+function edMakerChanged(currentSeries){
+  const maker = document.getElementById('ed-maker').value;
+  const series = maker && MASTER[maker] ? Object.keys(MASTER[maker]) : [];
+  fillSelect('ed-series', series, typeof currentSeries==='string'?currentSeries:'', true);
+}
+function saveEdit(){
+  const b = beds.find(x=>x.id===editTargetId); if(!b) return;
+  b.maker  = document.getElementById('ed-maker').value;
+  b.series = document.getElementById('ed-series').value;
+  b.motor  = document.getElementById('ed-motor').value;
+  b.width  = document.getElementById('ed-width').value;
+  b.state  = document.getElementById('ed-state').value;
+  b.cost   = document.getElementById('ed-cost').value;
+  b.memo   = document.getElementById('ed-memo').value.trim();
+  b.note   = document.getElementById('ed-note').value.trim();
+  b.updatedAt = new Date().toISOString();
+  closeModal('modal-edit');
+  scheduleSave(); renderAll();
+  toast('✏️ 保存しました');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+/* =====================================================
+   9) 返却受付フロー
+   ===================================================== */
+function buildReturnMakers(){
+  buildChips('r-maker', Object.keys(MASTER), function(v){
+    R = newReturnState();
+    R.maker = v;
+    buildChips('r-series', Object.keys(MASTER[v]||{}), onSeries);
+    setStep(2);
+  });
+}
+function onSeries(v){
+  R.series = v;
+  const info = (MASTER[R.maker]||{})[v] || {};
+  document.getElementById('r-memo').value = '';
+  buildChips('r-motor', info.motors && info.motors.length ? info.motors : MOTOR_OPTS, function(m){
+    R.motor = m; setStep(5);
+  });
+  buildChips('r-width', info.widths && info.widths.length ? info.widths : WIDTH_OPTS, function(w){
+    R.width = w; setStep(6);
+  });
+  buildChips('r-state', STATES, function(s){ R.state = s; setStep(7); });
+  buildChips('r-cost', COSTS, function(c){ R.cost = c; setStep(8); });
+  // 機種デフォルトの自動選択
+  if(info.motors && info.motors.length===1){ preselect('r-motor', info.motors[0]); R.motor = info.motors[0]; }
+  if(info.defWidth){ preselect('r-width', info.defWidth); R.width = info.defWidth; }
+  if(info.defCost){ preselect('r-cost', info.defCost); R.cost = info.defCost; }
+  setStep(3); setStep(4);
+  if(R.motor) setStep(5);
+  if(R.width) setStep(6);
+}
+function preselect(containerId, value){
+  document.querySelectorAll('#'+containerId+' .chip').forEach(c=>{
+    c.classList.toggle('sel', c.dataset.v===value);
+  });
+}
+function setStep(n){
+  for(let i=2;i<=n;i++){ document.getElementById('st'+i).classList.remove('off'); }
+}
+function resetReturn(){
+  R = newReturnState();
+  for(let i=2;i<=8;i++){ document.getElementById('st'+i).classList.add('off'); }
+  document.querySelectorAll('#tab-return .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('r-memo').value = '';
+  document.getElementById('r-note').value = '';
+}
+function registerReturn(){
+  if(!R.maker || !R.series){ toast('メーカーと機種を選んでください','red'); return; }
+  if(!R.motor){ toast('モーター数を選んでください','red'); return; }
+  if(!R.width){ toast('幅を選んでください','red'); return; }
+  if(!R.state){ toast('状態を選んでください','red'); return; }
+  if(!R.cost){ toast('費用区分を選んでください','red'); return; }
+  const now = new Date().toISOString();
+  beds.push({
+    id: uid(), status: 'storage',
+    maker: R.maker, series: R.series, motor: R.motor, width: R.width,
+    state: R.state, cost: R.cost,
+    memo: document.getElementById('r-memo').value.trim(),
+    note: document.getElementById('r-note').value.trim(),
+    createdAt: now, updatedAt: now
+  });
+  resetReturn();
+  scheduleSave(); renderAll();
+  toast('✅ 受付完了！一時保管に登録しました');
+}
+
+/* =====================================================
+   10) 設定：マスター編集
+   ===================================================== */
+function renderMasterEditor(){
+  const el = document.getElementById('master-editor');
+  el.innerHTML = Object.keys(MASTER).map(maker=>{
+    const series = Object.keys(MASTER[maker]);
+    return `<div class="mgroup">
+      <div class="mgroup-title">
+        <span>🏭 ${esc(maker)}</span>
+        <span class="del" onclick="delMaker('${esc(maker)}')">メーカー削除</span>
+      </div>
+      ${series.map(s=>`<div class="mrow"><span>${esc(s)}</span><span class="del" onclick="delSeries('${esc(maker)}','${esc(s)}')">✕</span></div>`).join('')}
+      <div class="addrow">
+        <input type="text" id="ns-${esc(maker)}" placeholder="新しい機種名">
+        <button class="btn btn-blue btn-sm" onclick="addSeries('${esc(maker)}')">追加</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function saveMasterLocal(){
+  localStorage.setItem('asport-v3-master', JSON.stringify(MASTER));
+  buildReturnMakers();
+  renderMasterEditor();
+}
+function addMaker(){
+  const v = document.getElementById('new-maker').value.trim();
+  if(!v){ toast('メーカー名を入力してください','red'); return; }
+  if(MASTER[v]){ toast('既に存在します','orange'); return; }
+  MASTER[v] = {};
+  document.getElementById('new-maker').value = '';
+  saveMasterLocal();
+  toast('メーカーを追加しました。「全端末に共有」も押してください');
+}
+function delMaker(maker){
+  if(!confirm('メーカー「'+maker+'」と機種を全て削除しますか？')) return;
+  delete MASTER[maker];
+  saveMasterLocal();
+  toast('削除しました。「全端末に共有」も押してください');
+}
+function addSeries(maker){
+  const input = document.getElementById('ns-'+maker);
+  if(!input) return;
+  const v = input.value.trim();
+  if(!v){ toast('機種名を入力してください','red'); return; }
+  if(MASTER[maker][v]){ toast('既に存在します','orange'); return; }
+  MASTER[maker][v] = {motors: MOTOR_OPTS.slice(), widths: WIDTH_OPTS.slice()};
+  saveMasterLocal();
+  toast('機種を追加しました。「全端末に共有」も押してください');
+}
+function delSeries(maker, series){
+  if(!confirm('機種「'+series+'」を削除しますか？')) return;
+  delete MASTER[maker][series];
+  saveMasterLocal();
+  toast('削除しました。「全端末に共有」も押してください');
+}
+function clearCache(){
+  if(!confirm('この端末のキャッシュを削除して、GASから読み直しますか？\n（スプレッドシートのデータは消えません）')) return;
+  localStorage.removeItem('asport-v3-beds');
+  localStorage.removeItem('asport-v3-master');
+  location.reload();
+}
+
+/* =====================================================
+   11) 初期化（★スクリプトの最後で実行★）
+   ===================================================== */
+function init(){
+  document.getElementById('hdate').textContent =
+    new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'short',day:'numeric',weekday:'short'});
+  buildChips('pk-staff-chips', STAFF, function(){});
+  buildChips('pk-date-chips', DATE_CHIPS, function(){});
+  buildReturnMakers();
+  renderMasterEditor();
+  autoPurgeTrash();
+  renderAll();                 // まずキャッシュで即表示（「読み込み中」で固まらない）
+  loadFromGAS(false);          // その後GASと同期
+  pullMaster(true);            // マスターも取得
+  syncTimer = setInterval(function(){ loadFromGAS(true); }, 30000);  // 30秒ごと自動同期
+}
+init();
+</script>
+</body>
+</html>
