@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>福祉用具購入 申請書類作成 | アスポート</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600&display=swap');
+:root{
+  --bg:#f0f4f8;--white:#fff;--surface:#f8fafc;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --accent:#0ea5e9;--accent-dark:#0284c7;
+  --green:#16a34a;--green-l:#f0fdf4;--green-b:#86efac;
+  --red:#dc2626;--red-l:#fef2f2;--red-b:#fecaca;
+  --purple:#7c3aed;--purple-l:#f5f3ff;--purple-b:#ddd6fe;
+  --gray:#64748b;--gray2:#94a3b8;--text:#0f172a;--text2:#475569;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;}
+header{background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.logo{font-size:15px;font-weight:700;color:var(--accent-dark);}
+.logo .sub{font-size:12px;color:var(--gray);font-weight:400;margin-left:6px;}
+.ver{font-size:10px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:999px;margin-left:4px;}
+main{max-width:860px;margin:0 auto;padding:16px 16px 80px;}
+.sec{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;}
+.sec-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr;}}
+.fld{margin-bottom:12px;}
+.fld label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;display:block;}
+.input,.select,.textarea{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--border2);background:var(--white);font-size:14px;font-family:inherit;color:var(--text);outline:none;}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--accent);}
+.textarea{resize:vertical;}
+.row{display:flex;gap:8px;align-items:center;}
+.row .input{flex:1;}
+.btn{padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:none;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-ghost{background:var(--surface);color:var(--gray);border:1px solid var(--border2);}
+.btn-red{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-big{width:100%;padding:14px;font-size:15px;font-weight:700;justify-content:center;}
+.item-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;position:relative;}
+.item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.item-num{font-size:13px;font-weight:700;color:var(--accent-dark);}
+.photo-area{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.photo-thumb{width:74px;height:74px;border-radius:8px;border:1px solid var(--border2);object-fit:cover;position:relative;}
+.photo-wrap{position:relative;}
+.photo-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:11px;cursor:pointer;line-height:1;}
+.gen-row{display:flex;gap:8px;margin-bottom:6px;}
+.gen-row .input{flex:1;}
+.hint-text{font-size:11px;color:var(--gray);margin-top:3px;}
+.staff-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.staff-chip{padding:7px 14px;border-radius:999px;border:1.5px solid var(--border2);background:var(--white);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;}
+.staff-chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.toast{position:fixed;bottom:18px;right:14px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;transform:translateY(60px);opacity:0;transition:.3s;background:var(--accent);color:#fff;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.r{background:var(--red);}
+.toast.g{background:var(--green);}
+.print-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:10px;justify-content:center;z-index:60;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== 印刷書類 ===== */
+#print-root{display:none;}
+.doc{background:#fff;width:210mm;min-height:297mm;padding:14mm 13mm;margin:0 auto 20px;font-family:'Noto Serif JP','Noto Sans JP',serif;color:#000;position:relative;}
+.doc-title{text-align:center;font-size:15pt;font-weight:700;margin-bottom:5mm;letter-spacing:.05em;}
+.dtable{width:100%;border-collapse:collapse;}
+.dtable th,.dtable td{border:1.2px solid #000;padding:2.2mm 2.5mm;font-size:10.5pt;vertical-align:middle;}
+.dtable th{background:#f2f2f2;font-weight:600;text-align:center;}
+.num-boxes{display:flex;}
+.num-box{width:6.4mm;height:8mm;border:1px solid #000;border-right:none;display:flex;align-items:center;justify-content:center;font-size:11pt;font-weight:600;}
+.num-box:last-child{border-right:1px solid #000;}
+.reason-box{font-size:9.5pt;line-height:1.55;padding:2mm 2.5mm;}
+.doc-note{font-size:8.5pt;line-height:1.5;margin-top:3mm;}
+.sig-line{display:flex;align-items:baseline;gap:4mm;margin:1.5mm 0;font-size:10.5pt;}
+.checkbox{display:inline-block;width:3.6mm;height:3.6mm;border:1.2px solid #000;margin-right:1.5mm;vertical-align:-0.5mm;position:relative;}
+.checkbox.checked::after{content:'✓';position:absolute;top:-1.6mm;left:0.1mm;font-size:4mm;font-weight:700;}
+.photo-page-grid{display:flex;flex-wrap:wrap;gap:8mm;justify-content:center;align-items:flex-start;}
+.photo-item{text-align:center;}
+.photo-item img{max-width:170mm;max-height:200mm;border:1px solid #999;object-fit:contain;}
+.photo-item.half img{max-width:82mm;max-height:110mm;}
+.photo-cap{font-size:10pt;font-weight:600;margin-top:2mm;font-family:'Noto Sans JP',sans-serif;}
+
+@media print{
+  body{background:#fff;}
+  header,main,.print-bar,.toast{display:none !important;}
+  #print-root{display:block;}
+  .doc{width:auto;min-height:auto;margin:0;padding:10mm 11mm;page-break-after:always;}
+  .doc:last-child{page-break-after:auto;}
+  @page{size:A4;margin:0;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📄 福祉用具購入 申請書類作成 <span class="sub">アスポート</span><span class="ver">v1.0</span></div>
+  <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 入力クリア</button>
+</header>
+
+<main>
+
+<!-- 利用者情報 -->
+<div class="sec">
+  <div class="sec-title">👤 利用者情報</div>
+  <div class="grid2">
+    <div class="fld"><label>フリガナ</label><input class="input" id="u-kana" placeholder="トガワ カズコ"></div>
+    <div class="fld"><label>氏名 *</label><input class="input" id="u-name" placeholder="戸川 和子"></div>
+  </div>
+  <div class="fld"><label>生年月日</label>
+    <div class="row">
+      <select class="select" id="u-era" style="width:90px;">
+        <option>明治</option><option>大正</option><option selected>昭和</option><option>平成</option><option>令和</option>
+      </select>
+      <input class="input" id="u-by" placeholder="15" style="width:70px;" inputmode="numeric">年
+      <input class="input" id="u-bm" placeholder="3" style="width:60px;" inputmode="numeric">月
+      <input class="input" id="u-bd" placeholder="15" style="width:60px;" inputmode="numeric">日
+    </div>
+  </div>
+  <div class="fld"><label>被保険者住所 *</label><input class="input" id="u-addr" placeholder="広島県 福山市 東吉津町6番29-206号"></div>
+  <div class="grid2">
+    <div class="fld"><label>被保険者番号（10桁）*</label><input class="input" id="u-hoken" placeholder="0000872266" maxlength="10" inputmode="numeric"></div>
+    <div class="fld"><label>電話番号</label><input class="input" id="u-tel" placeholder="084-924-3050"></div>
+  </div>
+</div>
+
+<!-- 商品 -->
+<div class="sec">
+  <div class="sec-title">🛒 購入商品（最大5品目）</div>
+  <div id="items"></div>
+  <button class="btn btn-ghost" onclick="addItem()">＋ 商品を追加</button>
+</div>
+
+<!-- 申請・担当情報 -->
+<div class="sec">
+  <div class="sec-title">🏢 申請・担当情報</div>
+  <div class="grid2">
+    <div class="fld"><label>購入日 *</label><input class="input" type="date" id="buy-date"></div>
+    <div class="fld"><label>申請日（空欄可）</label><input class="input" type="date" id="apply-date"></div>
+  </div>
+  <div class="fld"><label>担当者 *</label>
+    <div class="staff-chips" id="staff-chips"></div>
+  </div>
+</div>
+
+<!-- 確認シート情報 -->
+<div class="sec">
+  <div class="sec-title">✅ 適合確認シート情報</div>
+  <div class="grid3">
+    <div class="fld"><label>使用前点検日</label><input class="input" type="date" id="check-date"></div>
+    <div class="fld"><label>導入日</label><input class="input" type="date" id="intro-date"></div>
+    <div class="fld"><label>導入10日後 確認日</label><input class="input" type="date" id="after-date"></div>
+  </div>
+  <div class="grid2">
+    <div class="fld"><label>利用者(代理人)署名欄の名前（空欄可＝手書き）</label><input class="input" id="sign-name" placeholder="空欄なら印刷後に手書き"></div>
+    <div class="fld"><label>10日後の使用状況</label><input class="input" id="usage-text" value="転倒なく使用しております"></div>
+  </div>
+</div>
+
+<div style="height:8px;"></div>
+</main>
+
+<div class="print-bar">
+  <button class="btn btn-primary btn-big" style="max-width:400px;" onclick="doPrint()">🖨 書類一式を作成して印刷</button>
+</div>
+<div id="print-root"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STAFF=["佐々木 浩","荒木","福田","三井","郷坪","沖藤"];
+const COMPANY={
+  name:"アスポート", rep:"佐々木 浩",
+  addr:"広島県福山市引野町南一丁目１８番２５号",
+  tel:"084-971-8882", jigyoNo:"3471500771"
+};
+const CATEGORIES=["入浴補助用具","腰掛便座","簡易浴槽","スロープ","歩行器","歩行補助つえ","排泄支援予測機器","移動用リフトのつり具部分","自動排泄処理装置の交換可能部品"];
+
+let items=[]; // {cat,name,maker,price,keywords,reason,photos:[dataURL]}
+let selStaff=null;
+
+// ===== 初期化 =====
+document.getElementById('staff-chips').innerHTML=STAFF.map(s=>`<button class="staff-chip" onclick="pickStaff(this,'${s}')">${s}</button>`).join('');
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('buy-date').value=today;
+document.getElementById('check-date').value=today;
+document.getElementById('intro-date').value=today;
+
+loadDraft();
+if(items.length===0) addItem();
+renderItems();
+
+function pickStaff(btn,name){
+  selStaff=name;
+  document.querySelectorAll('.staff-chip').forEach(c=>c.classList.remove('sel'));
+  btn.classList.add('sel');
+  saveDraft();
+}
+
+// ===== 商品 =====
+function addItem(){
+  if(items.length>=5){toast('商品は最大5品目までです','r');return;}
+  items.push({cat:"入浴補助用具",name:"",maker:"",price:"",keywords:"",reason:"",photos:[]});
+  renderItems();
+}
+function removeItem(i){
+  items.splice(i,1);
+  renderItems();saveDraft();
+}
+function renderItems(){
+  const el=document.getElementById('items');
+  el.innerHTML=items.map((it,i)=>`
+  <div class="item-card">
+    <div class="item-head">
+      <div class="item-num">商品 ${i+1}</div>
+      ${items.length>1?`<button class="btn btn-red btn-sm" onclick="removeItem(${i})">削除</button>`:''}
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>種目名</label>
+        <select class="select" onchange="items[${i}].cat=this.value;saveDraft()">
+          ${CATEGORIES.map(c=>`<option${c===it.cat?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fld"><label>製造事業者名（メーカー）*</label><input class="input" value="${esc(it.maker)}" placeholder="アロン化成" oninput="items[${i}].maker=this.value;saveDraft()"></div>
+    </div>
+    <div class="grid2">
+      <div class="fld"><label>商品名 *</label><input class="input" value="${esc(it.name)}" placeholder="安寿 浴槽手すりUST-130N" oninput="items[${i}].name=this.value;saveDraft()"></div>
+      <div class="fld"><label>購入金額（円・税込）*</label><input class="input" value="${esc(it.price)}" placeholder="39600" inputmode="numeric" oninput="items[${i}].price=this.value;saveDraft()"></div>
+    </div>
+    <div class="fld"><label>必要な理由 — キーワード入力 → 文章生成</label>
+      <div class="gen-row">
+        <input class="input" value="${esc(it.keywords)}" placeholder="例：第一腰椎圧迫骨折、前屈で強い痛み、浴槽またぎ不安定" oninput="items[${i}].keywords=this.value;saveDraft()">
+        <button class="btn btn-purple" id="gen-btn-${i}" onclick="genReason(${i})">✨ 生成</button>
+      </div>
+      <textarea class="textarea" rows="3" placeholder="生成された文章（編集できます）" oninput="items[${i}].reason=this.value;saveDraft()">${esc(it.reason)}</textarea>
+      <div class="hint-text">診断名・症状・困っている動作をキーワードで入れて「生成」を押してください</div>
+    </div>
+    <div class="fld"><label>カタログ写真（複数可）</label>
+      <input type="file" accept="image/*" multiple onchange="addPhotos(${i},this)">
+      <div class="photo-area">
+        ${it.photos.map((p,pi)=>`<div class="photo-wrap"><img class="photo-thumb" src="${p}"><button class="photo-del" onclick="delPhoto(${i},${pi})">×</button></div>`).join('')}
+      </div>
+    </div>
+  </div>`).join('');
+  // 担当者チップ再選択
+  document.querySelectorAll('.staff-chip').forEach(c=>c.classList.toggle('sel',c.textContent===selStaff));
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+function addPhotos(i,input){
+  const files=[...input.files];
+  files.forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      // 縮小してデータ量を抑える
+      const img=new Image();
+      img.onload=()=>{
+        const maxW=1400;
+        const scale=Math.min(1,maxW/img.width);
+        const cv=document.createElement('canvas');
+        cv.width=img.width*scale;cv.height=img.height*scale;
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        items[i].photos.push(cv.toDataURL('image/jpeg',0.85));
+        renderItems();saveDraft();
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(f);
+  });
+  input.value='';
+}
+function delPhoto(i,pi){items[i].photos.splice(pi,1);renderItems();saveDraft();}
+
+// ===== 理由文生成（AI呼び出し + フォールバック） =====
+async function genReason(i){
+  const kw=items[i].keywords.trim();
+  if(!kw){toast('キーワードを入力してください','r');return;}
+  const btn=document.getElementById('gen-btn-'+i);
+  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+  let text=null;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,
+        messages:[{role:"user",content:
+`介護保険の福祉用具購入費支給申請書の「福祉用具が必要な理由」欄の文章を1つ作成してください。
+商品：${items[i].name||items[i].cat}
+キーワード：${kw}
+条件：
+- 2〜3文、120〜180字程度
+- 「〜により、〜があり、〜が不安定になっている。〜するためには〜が必要である。」のような役所向けの硬い文体
+- 診断名→症状→困難な動作→商品の効果と必要性 の順
+- 文章のみを出力（前置き・記号・改行装飾なし）`}]})
+    });
+    const data=await res.json();
+    if(data && data.content){
+      text=data.content.filter(c=>c.type==='text').map(c=>c.text).join('').trim();
+    }
+  }catch(e){ /* オフライン・GitHub Pages では自動組み立てに切替 */ }
+  if(!text) text=buildReason(kw, items[i].name||items[i].cat);
+  items[i].reason=text;
+  renderItems();saveDraft();
+  btn.innerHTML='✨ 生成';btn.disabled=false;
+  toast('文章を生成しました（編集できます）','g');
+}
+
+// キーワードからの自動組み立て（AI接続不可時）
+function buildReason(kw, product){
+  const parts=kw.split(/[、,，\s]+/).filter(x=>x);
+  const diag=[],symp=[],diff=[];
+  parts.forEach(p=>{
+    if(/骨折|症$|病|梗塞|麻痺|損傷|ヘルニア|パーキンソン|骨粗鬆/.test(p)) diag.push(p);
+    else if(/痛み|痛|低下|減少|ふらつき|しびれ|筋力|活動量/.test(p)) symp.push(p);
+    else diff.push(p);
+  });
+  const effect=productEffect(product);
+  let s='';
+  if(diag.length) s+=diag.join('および')+'により、';
+  if(symp.length) s+=symp.join('、')+'があり、';
+  if(diff.length) s+=diff.join('や')+'が不安定になっている。';
+  else s+='日常動作が不安定になっている。';
+  s+=effect;
+  return s;
+}
+function productEffect(product){
+  const p=product||'';
+  if(/浴槽台/.test(p)) return '浴槽の高低差を緩和し、浴槽内で安定した座位姿勢を確保するためには浴槽台が必要である。';
+  if(/手すり/.test(p)) return '浴槽への出入り時に安定した支持が得られ、安全にまたぐためには浴槽手すりが必要である。';
+  if(/シャワーチェア|チェア/.test(p)) return 'シャワーチェアを使用し安定した座位姿勢を確保する事で転倒無く入浴することが可能になる。';
+  if(/便座/.test(p)) return '便座からの立ち座りを安全に行うためには腰掛便座が必要である。';
+  if(/歩行器/.test(p)) return '歩行時の安定性を確保し安全に移動するためには歩行器が必要である。';
+  if(/つえ|杖/.test(p)) return '歩行時のバランスを補助し転倒を防ぐためには歩行補助つえが必要である。';
+  return '安全に日常動作を行うためには本用具が必要である。';
+}
+
+// ===== 日付ユーティリティ =====
+function toWareki(dstr){
+  if(!dstr) return {era:'令和',y:'',m:'',d:'',text:''};
+  const d=new Date(dstr+'T00:00:00');
+  const y=d.getFullYear(),m=d.getMonth()+1,dd=d.getDate();
+  let era='令和',ey=y-2018;
+  if(y<2019){era='平成';ey=y-1988;}
+  return {era,y:ey,m,d:dd,text:`${era}${ey}年${m}月${dd}日`,seireki:`${y}年${m}月${dd}日`};
+}
+function fmtSeireki(dstr){
+  if(!dstr) return '　　年　　月　　日';
+  const d=new Date(dstr+'T00:00:00');
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+function numBoxes(str,n){
+  const s=String(str||'').replace(/\D/g,'');
+  let h='<div class="num-boxes">';
+  for(let i=0;i<n;i++) h+=`<div class="num-box">${s[i]||''}</div>`;
+  return h+'</div>';
+}
+function yen(v){
+  const n=parseInt(String(v).replace(/\D/g,''))||0;
+  return n.toLocaleString();
+}
+
+// ===== 印刷 =====
+function doPrint(){
+  const name=document.getElementById('u-name').value.trim();
+  if(!name){toast('利用者氏名を入力してください','r');return;}
+  if(!selStaff){toast('担当者を選択してください','r');return;}
+  const validItems=items.filter(it=>it.name.trim());
+  if(!validItems.length){toast('商品を1件以上入力してください','r');return;}
+  buildDocs(validItems);
+  setTimeout(()=>window.print(),300);
+}
+
+function buildDocs(vItems){
+  const root=document.getElementById('print-root');
+  const kana=document.getElementById('u-kana').value.trim();
+  const name=document.getElementById('u-name').value.trim();
+  const era=document.getElementById('u-era').value;
+  const by=document.getElementById('u-by').value, bm=document.getElementById('u-bm').value, bd=document.getElementById('u-bd').value;
+  const addr=document.getElementById('u-addr').value.trim();
+  const hoken=document.getElementById('u-hoken').value.trim();
+  const tel=document.getElementById('u-tel').value.trim();
+  const buyDate=document.getElementById('buy-date').value;
+  const applyDate=document.getElementById('apply-date').value;
+  const checkDate=document.getElementById('check-date').value;
+  const introDate=document.getElementById('intro-date').value;
+  const afterDate=document.getElementById('after-date').value;
+  const signName=document.getElementById('sign-name').value.trim();
+  const usage=document.getElementById('usage-text').value.trim();
+
+  const eraMap={明治:'M',大正:'T',昭和:'S',平成:'H',令和:'R'};
+  const birthTxt=`${eraMap[era]||''}${by||'　'} 年 ${bm||'　'} 月 ${bd||'　'} 日`;
+  const applyW=applyDate?toWareki(applyDate):null;
+
+  // --- 申請書 ---
+  let rows='';
+  vItems.forEach((it,i)=>{
+    rows+=`
+    <tr>
+      <th rowspan="3" style="width:7mm;">${i+1}</th>
+      <td style="width:52mm;"><span style="font-size:8pt;color:#333;">（種目名）</span><br><span style="font-size:11.5pt;font-weight:600;">${esc(it.cat)}</span></td>
+      <td style="width:44mm;"><span style="font-size:8pt;color:#333;">（製造事業者名）</span><br><span style="font-size:11.5pt;font-weight:600;">${esc(it.maker)}</span></td>
+      <td style="width:40mm;text-align:right;font-size:12.5pt;font-weight:700;">${yen(it.price)} 円</td>
+      <td style="font-size:11pt;text-align:center;">${fmtSeireki(buyDate)}</td>
+    </tr>
+    <tr>
+      <td><span style="font-size:8pt;color:#333;">（商品名）</span><br><span style="font-size:11.5pt;font-weight:600;">${esc(it.name)}</span></td>
+      <td><span style="font-size:8pt;color:#333;">（販売事業者名）</span><br><span style="font-size:11.5pt;font-weight:600;">${COMPANY.name}</span></td>
+      <td colspan="2"><span style="font-size:8pt;color:#333;">（事業所番号）</span>${numBoxes(COMPANY.jigyoNo,10)}</td>
+    </tr>
+    <tr>
+      <td colspan="4" class="reason-box"><span style="font-size:8.5pt;">（福祉用具が必要な理由）</span><br><span style="font-size:10.5pt;">${esc(it.reason)}</span></td>
+    </tr>`;
+  });
+
+  const doc1=`
+  <div class="doc">
+    <div class="doc-title">介護保険居宅介護（介護予防）福祉用具購入費支給申請書（受領委任払い用）</div>
+    <table class="dtable">
+      <tr>
+        <th style="width:60mm;">個人番号</th>
+        <th>被保険者番号</th>
+      </tr>
+      <tr>
+        <td style="height:10mm;"></td>
+        <td>${numBoxes(hoken,10)}</td>
+      </tr>
+    </table>
+    <table class="dtable" style="margin-top:-1.2px;">
+      <tr><th style="width:105mm;">被保険者名前</th><th>生年月日</th></tr>
+      <tr>
+        <td style="height:14mm;">
+          <span style="font-size:8.5pt;">フリガナ　${esc(kana)}</span><br>
+          <span style="font-size:14pt;font-weight:700;letter-spacing:.1em;">${esc(name)}</span>
+        </td>
+        <td style="text-align:center;font-size:12.5pt;font-weight:600;">${birthTxt}</td>
+      </tr>
+      <tr><th colspan="2">被保険者住所</th></tr>
+      <tr><td colspan="2" style="font-size:12pt;font-weight:600;height:10mm;">${esc(addr)}</td></tr>
+    </table>
+    <table class="dtable" style="margin-top:2mm;">
+      <tr>
+        <th style="width:7mm;"></th>
+        <th>福祉用具名<br><span style="font-size:8pt;">（種目名及び商品名）</span></th>
+        <th>製造事業者名及び<br>販売事業者名</th>
+        <th>購入金額</th>
+        <th style="width:34mm;">購入日</th>
+      </tr>
+      ${rows}
+    </table>
+    <div style="margin-top:3mm;font-size:10.5pt;">
+      <div style="font-weight:700;">福山市長　様</div>
+      <div style="font-size:9.5pt;line-height:1.55;margin-top:1mm;">関係書類を添えて介護保険居宅介護（介護予防）福祉用具購入費の支給を申請します。<br>また、この申請に基づく介護保険居宅介護（介護予防）福祉用具購入費の受領については、次の者に委任します。</div>
+      <div class="sig-line" style="margin-top:2mm;">${applyW?applyW.seireki:'　　　　年　　月　　日'}</div>
+      <table class="dtable" style="margin-top:1mm;">
+        <tr>
+          <th style="width:26mm;">申請者<br><span style="font-size:8pt;">（委任者）</span></th>
+          <td>
+            <div class="sig-line">住　所　${esc(addr)}</div>
+            <div class="sig-line">名　前　<span style="font-size:12.5pt;font-weight:700;">${esc(name)}</span>　　　電話番号　${esc(tel)}</div>
+          </td>
+        </tr>
+        <tr>
+          <th>（受任者）</th>
+          <td>
+            <div class="sig-line">住　所　${COMPANY.addr}</div>
+            <div class="sig-line">事業所名称　<b>${COMPANY.name}</b>　　（担当者）　${esc(selStaff)}</div>
+            <div class="sig-line">代表者名　<b>${COMPANY.rep}</b>　　（電話番号）　${COMPANY.tel}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="doc-note">
+      【注意事項】<br>
+      ●この申請書には、購入した福祉用具の内訳が明確な領収証及び福祉用具のパンフレット等を添付してください。<br>
+      ●「福祉用具が必要な理由」は、個々の用具ごとに記載してください。また、同一商品（歩行補助杖や固定用スロープ等）を複数購入する場合、必要な理由に加え、単価や個数を記載してください。<br>
+      ●受領委任払いを利用することができるのは、次の(1)(2)を満たしている方です。<br>
+      　(1) 申請日時点において、福祉用具購入日の要介護度が確定していること。<br>
+      　(2) 購入日時点において、介護保険料滞納による保険給付の支払方法変更や制限の措置を受けていないこと。
+    </div>
+  </div>`;
+
+  // --- 適合確認シート ---
+  const cw=toWareki(checkDate), iw=toWareki(introDate), aw=toWareki(afterDate);
+  const doc2=`
+  <div class="doc" style="font-family:'Noto Sans JP',sans-serif;">
+    <table style="width:100%;border-collapse:collapse;margin-bottom:5mm;">
+      <tr>
+        <td style="width:62mm;border:1.5px solid #000;padding:3mm;text-align:center;font-size:13pt;font-weight:700;line-height:1.5;">福祉用具適合確認シート<br><span style="font-size:10pt;">(導入時確認書)</span></td>
+        <td style="text-align:right;vertical-align:bottom;font-size:10.5pt;padding-left:6mm;">
+          <div style="font-size:15pt;font-weight:700;text-align:right;">株式会社 アスポート</div>
+          <div style="margin-top:2mm;">作成日　${aw.text||iw.text||'　'}</div>
+          <div>担当者　<b>${esc(selStaff)}</b></div>
+        </td>
+      </tr>
+    </table>
+    <table class="dtable">
+      <tr><th style="width:32mm;">利用者氏名</th><td style="font-size:14pt;font-weight:700;height:11mm;">${esc(name)}　様</td></tr>
+    </table>
+    <table class="dtable" style="margin-top:3mm;">
+      <tr><th colspan="2">導入福祉用具</th></tr>
+      <tr>
+        <th style="width:32mm;">特定福祉用具販売</th>
+        <td style="font-size:10.5pt;line-height:2;">
+          <span class="checkbox ${vItems.some(x=>x.cat==='腰掛便座')?'checked':''}"></span>腰掛便座　
+          <span class="checkbox ${vItems.some(x=>x.cat==='入浴補助用具')?'checked':''}"></span>入浴補助用具　
+          <span class="checkbox ${vItems.some(x=>x.cat==='簡易浴槽')?'checked':''}"></span>簡易浴槽　
+          <span class="checkbox ${vItems.some(x=>x.cat==='スロープ')?'checked':''}"></span>スロープ<br>
+          <span class="checkbox ${vItems.some(x=>x.cat==='歩行器')?'checked':''}"></span>歩行器　
+          <span class="checkbox ${vItems.some(x=>x.cat==='歩行補助つえ')?'checked':''}"></span>歩行補助つえ　
+          <span class="checkbox ${vItems.some(x=>x.cat==='排泄支援予測機器')?'checked':''}"></span>排泄支援予測機器<br>
+          <span class="checkbox ${vItems.some(x=>x.cat==='自動排泄処理装置の交換可能部品')?'checked':''}"></span>自動排泄処理装置の交換可能部品　
+          <span class="checkbox ${vItems.some(x=>x.cat==='移動用リフトのつり具部分')?'checked':''}"></span>移動用リフトのつり具部分
+        </td>
+      </tr>
+      <tr><th>商品名</th><td style="font-size:10.5pt;line-height:1.7;">${vItems.map(x=>esc(x.name)).join('<br>')}</td></tr>
+    </table>
+    <table class="dtable" style="margin-top:3mm;">
+      <tr><th colspan="2">導入時の確認事項</th></tr>
+      <tr><th style="width:32mm;">使用前点検</th><td>${cw.text||'　'}</td></tr>
+      <tr><th>導入日時</th><td>${iw.text||'　'}　　AM ・ PM</td></tr>
+      <tr><th>適合確認</th><td><span class="checkbox checked"></span>導入福祉用具が身体状況に適合　　<span class="checkbox checked"></span>導入福祉用具が利用環境に適合</td></tr>
+      <tr>
+        <th>利用者説明</th>
+        <td style="line-height:2.1;font-size:10pt;">
+          <span class="checkbox checked"></span>実際に福祉用具を用いながら使用方法を説明いたしました。<br>
+          <span class="checkbox checked"></span>福祉用具の保守、事故防止のための利用上の注意事項を説明いたしました。<br>
+          <span class="checkbox checked"></span>取扱説明書をお渡しいたしました。<br>
+          <span class="checkbox"></span>介護ベッドに係る事故の危険性及び対応策等の説明をいたしました。<br>
+          <span class="checkbox"></span>選択制（貸与・販売）対象の福祉用具の提供について説明いたしました。
+        </td>
+      </tr>
+      <tr>
+        <th>説明担当者</th>
+        <td>
+          <table style="width:100%;border-collapse:collapse;"><tr>
+            <td style="width:40mm;font-size:11pt;">${esc(selStaff)}</td>
+            <td style="width:30mm;border:1.5px solid #000;border-right:none;background:#f2f2f2;text-align:center;font-size:9.5pt;padding:2mm;">利用者(代理人)様</td>
+            <td style="border:1.5px solid #000;height:11mm;font-size:12pt;padding:0 3mm;">${esc(signName)}</td>
+          </tr></table>
+        </td>
+      </tr>
+    </table>
+    <table class="dtable" style="margin-top:3mm;">
+      <tr><th colspan="2">導入10日後の確認事項</th></tr>
+      <tr><th style="width:32mm;">確認日時</th><td>${aw.text||'　'}　　（電話 ・ 訪問）　　確認者　${esc(selStaff)}</td></tr>
+      <tr><th>使用状況</th><td style="height:12mm;"><span class="checkbox checked"></span>問題なし　<span class="checkbox"></span>再説明　<span class="checkbox"></span>再調整　<span class="checkbox"></span>変更提案<br>${esc(usage)}</td></tr>
+    </table>
+    <div style="display:flex;justify-content:space-between;margin-top:5mm;gap:6mm;">
+      <table class="dtable" style="width:80mm;">
+        <tr><th>専門相談員による総合確認の結果（自由記載）</th></tr>
+        <tr><td style="height:22mm;"></td></tr>
+      </table>
+      <div style="font-size:10.5pt;line-height:1.9;">
+        <div style="font-weight:700;margin-bottom:2mm;">以上、上記のとおり導入した福祉用具の適合を確認いたしました</div>
+        <div>事業所 ： ${COMPANY.name}</div>
+        <div>担当者 ： ${esc(selStaff)}</div>
+        <div>住　所 ： 福山市引野町南1-18-25</div>
+        <div>連絡先 ： ${COMPANY.tel}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // --- カタログ写真ページ ---
+  let doc3='';
+  vItems.forEach(it=>{
+    if(!it.photos.length) return;
+    const many=it.photos.length>1;
+    doc3+=`
+    <div class="doc" style="font-family:'Noto Sans JP',sans-serif;">
+      <div class="doc-title" style="font-size:13pt;">カタログ（参考資料）</div>
+      <div style="text-align:center;font-size:11.5pt;font-weight:700;margin-bottom:5mm;">${esc(it.name)}　（${esc(it.maker)}）</div>
+      <div class="photo-page-grid">
+        ${it.photos.map(p=>`<div class="photo-item ${many?'half':''}"><img src="${p}"></div>`).join('')}
+      </div>
+      <div style="position:absolute;bottom:12mm;right:13mm;font-size:9.5pt;color:#333;">${COMPANY.name}　利用者：${esc(name)} 様</div>
+    </div>`;
+  });
+
+  root.innerHTML=doc1+doc2+doc3;
+}
+
+// ===== 下書き保存 =====
+function saveDraft(){
+  const d={
+    kana:v('u-kana'),name:v('u-name'),era:v('u-era'),by:v('u-by'),bm:v('u-bm'),bd:v('u-bd'),
+    addr:v('u-addr'),hoken:v('u-hoken'),tel:v('u-tel'),
+    buyDate:v('buy-date'),applyDate:v('apply-date'),checkDate:v('check-date'),introDate:v('intro-date'),afterDate:v('after-date'),
+    signName:v('sign-name'),usage:v('usage-text'),
+    staff:selStaff,items
+  };
+  try{localStorage.setItem('asport-shinsei',JSON.stringify(d));}catch(e){}
+}
+function v(id){const e=document.getElementById(id);return e?e.value:'';}
+function sv(id,val){const e=document.getElementById(id);if(e&&val!==undefined&&val!==null)e.value=val;}
+function loadDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem('asport-shinsei')||'null');
+    if(!d)return;
+    sv('u-kana',d.kana);sv('u-name',d.name);sv('u-era',d.era);sv('u-by',d.by);sv('u-bm',d.bm);sv('u-bd',d.bd);
+    sv('u-addr',d.addr);sv('u-hoken',d.hoken);sv('u-tel',d.tel);
+    sv('buy-date',d.buyDate);sv('apply-date',d.applyDate);sv('check-date',d.checkDate);sv('intro-date',d.introDate);sv('after-date',d.afterDate);
+    sv('sign-name',d.signName);sv('usage-text',d.usage);
+    selStaff=d.staff||null;
+    if(Array.isArray(d.items)) items=d.items;
+  }catch(e){}
+}
+['u-kana','u-name','u-era','u-by','u-bm','u-bd','u-addr','u-hoken','u-tel','buy-date','apply-date','check-date','intro-date','after-date','sign-name','usage-text'].forEach(id=>{
+  const e=document.getElementById(id);
+  if(e) e.addEventListener('input',saveDraft);
+});
+
+function clearAll(){
+  if(!confirm('入力内容を全てクリアしますか？'))return;
+  localStorage.removeItem('asport-shinsei');
+  location.reload();
+}
+
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
