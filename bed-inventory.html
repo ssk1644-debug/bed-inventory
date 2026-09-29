@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.7.8 | アスポート</title>
+<title>ベッド在庫管理 v3.7.9 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -148,6 +148,10 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 
 .mrow{display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:7px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:#fff;font-size:13px;}
+.cost-tg{display:inline-flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden;}
+.cost-tg button{border:0;background:var(--surface);color:var(--gray);font-size:12px;font-weight:700;padding:5px 12px;cursor:pointer;}
+.cost-tg button.on-ins{background:var(--accent-dark);color:#fff;}
+.cost-tg button.on-self{background:var(--yellow);color:#fff;}
 .mrow .del{color:var(--red);cursor:pointer;font-weight:700;padding:2px 7px;}
 .mgroup{margin-bottom:16px;}
 .mgroup-title{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
@@ -163,7 +167,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.7.8</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.7.9</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -299,7 +303,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.7.8</b><br>
+      バージョン: <b>v3.7.9</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -409,7 +413,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.7.8';
+const APP_VERSION = 'v3.7.9';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
@@ -733,10 +737,20 @@ function bedUnits(b){
   if(info.unitsByMotor && b.motor && info.unitsByMotor[String(b.motor)]) return info.unitsByMotor[String(b.motor)];
   return info.units || '';
 }
-function costGroup(b){ return String(b.cost||'').indexOf('保険')>=0 ? '保険' : '保険外'; }
+// 機種マスターの費用区分（未設定は保険扱い）
+function seriesCost(maker, series){
+  const info = (MASTER[maker]||{})[series];
+  return (info && info.defCost) ? info.defCost : '保険対応のみ';
+}
+// ベッドの実際の費用区分: 個別設定 > 機種設定
+function bedCost(b){ return b.cost || seriesCost(b.maker, b.series); }
+function costGroup(b){ return String(bedCost(b)).indexOf('保険')>=0 ? '保険' : '保険外'; }
+function costLabel(b){ return costGroup(b)==='保険' ? '保険' : '実費'; }
+// 表示用（旧データの「要相談」などはそのまま表示）
+function costText(b){ return (b.cost && COSTS.indexOf(b.cost)<0) ? b.cost : costLabel(b); }
 function comboKey(b){
   const w = b.width==='可変' ? '可変' : (b.width||'?')+'cm';
-  return costGroup(b)+'×'+(b.motor||'?')+'M×'+w;
+  return costLabel(b)+'×'+(b.motor||'?')+'M×'+w;
 }
 function comboStock(b){
   const key = comboKey(b);
@@ -904,7 +918,7 @@ function renderAvailable(){
       <div class="cbody">
         ${bedTitleHTML(b, '', priceBadge(b))}
         <div class="card-meta">
-          ${b.memo?('📝 '+esc(b.memo)+' ／ '):''}${esc(b.state||'—')} ／ ${esc(b.cost||'—')}
+          ${b.memo?('📝 '+esc(b.memo)+' ／ '):''}${esc(b.state||'—')} ／ ${esc(costText(b))}
           ${b.note?('<br>⚠️ '+esc(b.note)):''}
           <br>清掃: ${fmt(b.completedAt)}${b.cleanedBy?('（'+esc(b.cleanedBy)+'）'):''}
         </div>
@@ -963,7 +977,7 @@ function renderStorage(){
     const info = [];
     if(b.pickupSubject) info.push('<b style="color:var(--text)">👤 ' + esc(b.pickupSubject) + '</b>');
     if(b.memo) info.push('📝 ' + esc(b.memo));
-    if(b.cost) info.push(esc(b.cost));
+    info.push(esc(costText(b)));
     if(urgent) info.push('<b style="color:var(--red)">在庫ゼロ・優先！</b>');
     else if(hasCombo) info.push('在庫:' + stock + '台');
     return `<div class="card compact ${urgent?'urgent':''}">
@@ -1233,9 +1247,9 @@ function autoPurgeTrash(){
 /* =====================================================
    8) 編集モーダル
    ===================================================== */
-function fillSelect(id, options, current, allowEmpty){
+function fillSelect(id, options, current, allowEmpty, emptyLabel){
   const el = document.getElementById(id);
-  let html = allowEmpty ? '<option value="">（未設定）</option>' : '';
+  let html = allowEmpty ? '<option value="">'+esc(emptyLabel||'（未設定）')+'</option>' : '';
   html += options.map(o=>`<option value="${esc(o)}" ${o===current?'selected':''}>${esc(o)}</option>`).join('');
   el.innerHTML = html;
   if(current && !options.includes(current)){
@@ -1251,7 +1265,7 @@ function openEdit(id){
   fillSelect('ed-width', WIDTH_OPTS, b.width, true);
   fillSelect('ed-length', LENGTH_OPTS, b.length, true);
   fillSelect('ed-state', STATES, b.state, true);
-  fillSelect('ed-cost', COSTS, b.cost, true);
+  fillSelect('ed-cost', COSTS, b.cost, true, '（機種設定に従う）');
   document.getElementById('ed-units').value = b.units || '';
   document.getElementById('ed-memo').value = b.memo || '';
   document.getElementById('ed-note').value = b.note || '';
@@ -1356,7 +1370,12 @@ function renderMasterEditor(){
         const info = MASTER[maker][s] || {};
         return `<div class="mrow" style="display:block;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <b style="font-size:13px;">${esc(s)}</b>
+            <span style="display:flex;align-items:center;gap:10px;"><b style="font-size:13px;">${esc(s)}</b>
+            ${(function(){ const ins = seriesCost(maker, s).indexOf('保険')>=0;
+              return `<span class="cost-tg">
+                <button type="button" class="${ins?'on-ins':''}" data-act="setCost" data-cost="保険対応のみ" data-maker="${esc(maker)}" data-series="${esc(s)}">保険</button>
+                <button type="button" class="${ins?'':'on-self'}" data-act="setCost" data-cost="自費対応可" data-maker="${esc(maker)}" data-series="${esc(s)}">実費</button>
+              </span>`; })()}</span>
             <span class="del" data-act="delSeries" data-maker="${esc(maker)}" data-series="${esc(s)}">✕</span>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--gray);">
@@ -1412,6 +1431,13 @@ function delSeries(maker, series){
   saveMasterLocal();
   toast('削除しました。「全端末に共有」も押してください');
 }
+function setSeriesCost(maker, series, cost){
+  if(!MASTER[maker] || !MASTER[maker][series]) return;
+  MASTER[maker][series].defCost = cost;
+  saveMasterLocal();
+  renderAll();
+  toast(series + ' を「' + (cost.indexOf('保険')>=0?'保険':'実費') + '」にしました。「全端末に共有」も押してください');
+}
 function clearCache(){
   if(!confirm('この端末のキャッシュを削除して、GASから読み直しますか？\n（スプレッドシートのデータは消えません）')) return;
   localStorage.removeItem('asport-v3-beds');
@@ -1443,6 +1469,7 @@ document.addEventListener('click', function(ev){
   else if(a==='delMaker')         delMaker(t.dataset.maker);
   else if(a==='addSeries')        addSeries(t.dataset.maker);
   else if(a==='delSeries')        delSeries(t.dataset.maker, t.dataset.series);
+  else if(a==='setCost')          setSeriesCost(t.dataset.maker, t.dataset.series, t.dataset.cost);
 });
 
 // 設定画面: 機種ごとのモーター数・幅・単位数入力
