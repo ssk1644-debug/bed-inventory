@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.8.5 | アスポート</title>
+<title>ベッド在庫管理 v3.8.6 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -169,36 +169,30 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 
 #print-area{display:none;}
 @media print{
-  @page{size:A4 portrait;margin:8mm;}
+  @page{size:A4 portrait;margin:10mm;}
   body{background:#fff !important;padding:0 !important;}
   body > *:not(#print-area){display:none !important;}
   #print-area{display:block !important;}
 }
-.ps-page{width:194mm;height:280mm;display:flex;flex-direction:column;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic',sans-serif;}
+.ps-page{width:186mm;height:270mm;margin:0 auto;display:flex;flex-direction:column;justify-content:center;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',sans-serif;line-height:1.25;}
 .ps-page:last-child{page-break-after:auto;break-after:auto;}
-.ps-half{height:137mm;box-sizing:border-box;padding:2mm 1mm;overflow:hidden;font-size:9.5pt;}
+.ps-half{height:130mm;box-sizing:border-box;padding:1mm 0.5mm;overflow:hidden;font-size:9pt;}
 .ps-cut{height:6mm;display:flex;align-items:center;gap:2mm;font-size:8pt;color:#555;}
 .ps-cut::before,.ps-cut::after{content:"";flex:1;border-top:1.5px dashed #555;}
-.ps-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:1mm;margin-bottom:2mm;}
-.ps-title{font-size:14pt;font-weight:800;}
-.ps-tag{font-size:9pt;font-weight:700;border:1.5px solid #000;padding:0.5mm 2mm;border-radius:1mm;}
-.ps-tbl{width:100%;border-collapse:collapse;margin-bottom:1.6mm;}
-.ps-tbl th,.ps-tbl td{border:1px solid #000;padding:1.1mm 1.6mm;text-align:left;vertical-align:middle;}
-.ps-tbl th{background:#eee;font-weight:700;white-space:nowrap;width:24mm;}
+.ps-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:0.8mm;margin-bottom:1.5mm;}
+.ps-title{font-size:13pt;font-weight:800;}
+.ps-tag{font-size:8.5pt;font-weight:700;border:1.5px solid #000;padding:0.3mm 2mm;border-radius:1mm;}
+.ps-tbl{width:100%;border-collapse:collapse;margin-bottom:1.2mm;}
+.ps-tbl th,.ps-tbl td{border:1px solid #000;padding:0.9mm 1.5mm;text-align:left;vertical-align:middle;}
+.ps-tbl th{background:#eee;font-weight:700;white-space:nowrap;width:22mm;}
 .ps-tbl td.c{text-align:center;}
 .ps-big{font-size:12pt;font-weight:700;}
-.ck{display:inline-block;margin-right:3.2mm;white-space:nowrap;}
-.ck::before{content:"□";font-size:11pt;margin-right:0.6mm;}
+.ck{display:inline-block;margin-right:2.6mm;white-space:nowrap;}
+.ck::before{content:"□";font-size:10pt;margin-right:0.5mm;}
 .ck.on::before{content:"☑";}
-.ps-note{border:1px solid #000;min-height:14mm;padding:1.2mm 1.6mm;white-space:pre-wrap;}
-.ps-sign{display:flex;gap:3mm;margin-top:1.6mm;font-size:9pt;}
-.ps-list th,.ps-list td{padding:0.75mm 1.6mm !important;font-size:9pt;}
-.ps-note{min-height:9mm !important;}
-.ps-top .ps-tbl th,.ps-top .ps-tbl td{padding:1.6mm 1.8mm;}
-.ps-top .ps-list th,.ps-top .ps-list td{padding:1.5mm 1.6mm !important;font-size:9.5pt;}
-.ps-top .ps-note{min-height:14mm !important;}
-.ps-bottom .ps-list th,.ps-bottom .ps-list td{padding:0.55mm 1.6mm !important;}
-.ps-bottom .ps-sign{margin-top:1.2mm;}
+.ps-note{border:1px solid #000;min-height:9mm;padding:1mm 1.5mm;white-space:pre-wrap;}
+.ps-sign{display:flex;gap:3mm;margin-top:1.5mm;font-size:8.5pt;}
+.ps-list th,.ps-list td{padding:0.55mm 1.5mm !important;font-size:8.5pt;}
 .ps-sign div{flex:1;border-bottom:1px solid #000;padding-bottom:1mm;}
 </style>
 </head>
@@ -210,7 +204,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.8.5</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.8.6</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -353,7 +347,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.8.5</b><br>
+      バージョン: <b>v3.8.6</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -491,7 +485,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.8.5';
+const APP_VERSION = 'v3.8.6';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
@@ -1536,9 +1530,9 @@ function clearCache(){
 // パーツ袋のチェック項目 [品名, 標準数]
 // ベッド本体のパーツのみ（サイドレール・マット等の付属品は含まない）
 const PARTS_LIST = [
-  ['手元スイッチ（リモコン）','1'], ['電源コード','1'], ['ヘッドボード','1'], ['フットボード','1'],
-  ['ボード固定ノブ・ネジ',''], ['キャスター・ストッパー',''], ['ボルト・ナット・ピン類',''],
-  ['取扱説明書',''], ['プッシュリベット',''], ['マット止め',''], ['連結バー','']
+  ['手元スイッチ（リモコン）','1'], ['電源コード','1'], ['ヘッド・フットボード','2'],
+  ['ボード固定ノブ・ネジ',''], ['ボルト・ナット・ピン類',''], ['プッシュリベット',''],
+  ['マット止め',''], ['連結バー　<b>※定位置に戻す！</b>',''], ['取扱説明書','']
 ];
 // 指図書の付属品（ベッド以外）を品名ごとにまとめる
 function bedStock(b){
@@ -1564,7 +1558,8 @@ function specText(b){
 function accessoryRows(b){
   let list = Array.isArray(b.items) ? b.items.filter(it=>!it.isBed) : [];
   if(!list.length) list = [{name:'サイドレール'},{name:'サイドレール'},{name:'介助バー（グリップ）'},{name:'マットレス'}];
-  list = list.concat([{name:''},{name:''}]).slice(0, Math.max(6, list.length));
+  const minRows = Math.max(8, list.length + 2);
+  while(list.length < minRows) list = list.concat([{name:''}]);
   return list.map(function(it){
     const mat = /マット/.test(it.name||'') && !/止め/.test(it.name||'');
     const cond = !it.name ? (ck('傷')+ck('さび')+ck('破損')+ck('汚れ'))
@@ -1583,10 +1578,9 @@ function sheetHTML(b){
   const top = `<div class="ps-half ps-top">
     <div class="ps-head"><span class="ps-title">ベッド引き上げ指示書</span><span class="ps-tag">付属品用（柵・マットに添付）</span></div>
     <table class="ps-tbl">
-      <tr><th>利用者名</th><td class="ps-big" style="font-size:14pt;">${esc(b.pickupSubject||'')}</td>
-          <th style="width:16mm;">指図No</th><td style="width:34mm;">${esc(b.orderNo||'')}</td></tr>
+      <tr><th>利用者名</th><td colspan="3" class="ps-big" style="font-size:13pt;">${esc(b.pickupSubject||'')}</td></tr>
       <tr><th>引き上げ日</th><td>${esc(b.pickupDate && b.pickupDate!=='未定' ? b.pickupDate : '')}</td>
-          <th>担当</th><td>${esc(b.pickupStaff||'')}</td></tr>
+          <th style="width:14mm;">担当</th><td style="width:34mm;">${esc(b.pickupStaff||'')}</td></tr>
       <tr><th>回収場所</th><td colspan="3">${esc(b.address||'')}${b.tel?('　TEL '+esc(b.tel)):''}</td></tr>
       <tr><th>ベッド</th><td colspan="3"><b style="font-size:11pt;">${esc(model)}</b>${spec?('　'+esc(spec)):''}${st.stock?('　在庫番号 <b>'+esc(st.stock)+'</b>'):''}</td></tr>
     </table>
@@ -1599,14 +1593,14 @@ function sheetHTML(b){
     <div class="ps-note">${esc(String(b.memo||'').replace(/^指図No[0-9A-Za-z-]+( ／ )?/,''))}</div>
   </div>`;
   // 下半分：ベッド本体＋ベッドパーツ
-  const rows = PARTS_LIST.map(p=>`<tr><td>${esc(p[0])}</td><td class="c">${esc(p[1])}</td><td class="c">□</td><td class="c">□</td><td>${ck('傷')}${ck('さび')}${ck('破損')}</td></tr>`).join('');
+  const rows = PARTS_LIST.map(p=>`<tr><td>${p[0]}</td><td class="c">${esc(p[1])}</td><td class="c">□</td><td class="c">□</td><td>${ck('傷')}${ck('さび')}${ck('破損')}</td></tr>`).join('');
   const bottom = `<div class="ps-half ps-bottom">
     <div class="ps-head"><span class="ps-title">ベッド本体・パーツ確認票</span><span class="ps-tag">ベッド本体用（ベッド・パーツ袋に）</span></div>
     <table class="ps-tbl">
       <tr><th>利用者名</th><td class="ps-big">${esc(b.pickupSubject||'')}</td>
           <th style="width:16mm;">在庫番号</th><td style="width:34mm;font-size:14pt;font-weight:800;">${esc(st.stock)}</td></tr>
       <tr><th>機種</th><td colspan="3"><span style="font-size:14pt;font-weight:800;">${esc(model)}</span>${spec?('<span style="font-size:11pt;font-weight:700;">　'+esc(spec)+'</span>'):''}</td></tr>
-      <tr><th>仕様（長さ）</th><td colspan="3">${ck('ショート', len.indexOf('ショート')>=0)}${ck('レギュラー', len.indexOf('レギュラー')>=0)}${ck('ロング', len.indexOf('ロング')>=0)}<b style="font-size:10.5pt;border:1.5px solid #000;padding:0 1.5mm;margin-left:1mm;">清掃後はレギュラーに戻す！</b><b style="font-size:10.5pt;border:1.5px solid #000;padding:0 1.5mm;margin-left:1.5mm;">定位置に戻す！</b></td></tr>
+      <tr><th>仕様（長さ）</th><td colspan="3">${ck('ショート', len.indexOf('ショート')>=0)}${ck('レギュラー', len.indexOf('レギュラー')>=0)}${ck('ロング', len.indexOf('ロング')>=0)}<b style="font-size:10.5pt;border:1.5px solid #000;padding:0 1.5mm;margin-left:1mm;">清掃後はレギュラーに戻す！</b></td></tr>
       <tr><th>ベッド本体</th><td colspan="3">${ck('キズ')}${ck('さび')}${ck('汚れ')}${ck('尿漏れ')}${ck('異常なし')}</td></tr>
       <tr><th>故障・破損</th><td colspan="3">故障 ${ck('無')}${ck('有')}（　　　　　　）　破損 ${ck('無')}${ck('有')}（　　　　　　）</td></tr>
     </table>
