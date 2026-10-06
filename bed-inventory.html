@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.8.2 | アスポート</title>
+<title>ベッド在庫管理 v3.8.5 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -192,10 +192,13 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 .ck.on::before{content:"☑";}
 .ps-note{border:1px solid #000;min-height:14mm;padding:1.2mm 1.6mm;white-space:pre-wrap;}
 .ps-sign{display:flex;gap:3mm;margin-top:1.6mm;font-size:9pt;}
-.ps-top{font-size:10.5pt;}
-.ps-top .ps-tbl th,.ps-top .ps-tbl td{padding:1.5mm 1.8mm;}
-.ps-top .ps-note{min-height:11mm;}
-.ps-top .ps-sign{margin-top:3mm;font-size:10pt;}
+.ps-list th,.ps-list td{padding:0.75mm 1.6mm !important;font-size:9pt;}
+.ps-note{min-height:9mm !important;}
+.ps-top .ps-tbl th,.ps-top .ps-tbl td{padding:1.6mm 1.8mm;}
+.ps-top .ps-list th,.ps-top .ps-list td{padding:1.5mm 1.6mm !important;font-size:9.5pt;}
+.ps-top .ps-note{min-height:14mm !important;}
+.ps-bottom .ps-list th,.ps-bottom .ps-list td{padding:0.55mm 1.6mm !important;}
+.ps-bottom .ps-sign{margin-top:1.2mm;}
 .ps-sign div{flex:1;border-bottom:1px solid #000;padding-bottom:1mm;}
 </style>
 </head>
@@ -207,7 +210,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.8.2</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.8.5</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -350,7 +353,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.8.2</b><br>
+      バージョン: <b>v3.8.5</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -488,7 +491,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.8.2';
+const APP_VERSION = 'v3.8.5';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
@@ -1024,6 +1027,7 @@ function renderPickup(){
       <div class="card-meta">
         ${(b.maker||b.series)?('<span style="font-weight:600;color:var(--text)">'+esc((b.maker?b.maker+' ':'')+(b.series||''))+'</span>'+specBadges(b)+'<br>'):''}
         担当: ${esc(b.pickupStaff||'—')} ／ ${esc(b.pickupDate||'未定')}${b.pickupStatus?(' ／ '+(stIcon[b.pickupStatus]||'')+' '+esc(b.pickupStatus)):''}
+        ${bedStock(b).stock?('<br>🏷 在庫番号 <b>'+esc(bedStock(b).stock)+'</b>'):''}
         ${b.address?('<br>📍 '+esc(b.address)+(b.tel?(' ／ ☎ '+esc(b.tel)):'')):''}
         ${accessorySummary(b).length?('<br>🧩 '+accessorySummary(b).map(a=>esc(a.name)+'×'+a.qty).join('、')):''}
       </div>
@@ -1534,9 +1538,13 @@ function clearCache(){
 const PARTS_LIST = [
   ['手元スイッチ（リモコン）','1'], ['電源コード','1'], ['ヘッドボード','1'], ['フットボード','1'],
   ['ボード固定ノブ・ネジ',''], ['キャスター・ストッパー',''], ['ボルト・ナット・ピン類',''],
-  ['取扱説明書',''], ['',''], ['','']
+  ['取扱説明書',''], ['プッシュリベット',''], ['マット止め',''], ['連結バー','']
 ];
 // 指図書の付属品（ベッド以外）を品名ごとにまとめる
+function bedStock(b){
+  const it = Array.isArray(b.items) ? b.items.find(x=>x.isBed) : null;
+  return it ? {stock:it.stock||'', code:it.code||''} : {stock:b.stockNo||'', code:''};
+}
 function accessorySummary(b){
   if(!Array.isArray(b.items)) return [];
   const map = {}, order = [];
@@ -1549,51 +1557,64 @@ function accessorySummary(b){
   return order.map(k=>({name:k, qty:map[k]}));
 }
 function ck(label, on){ return '<span class="ck'+(on?' on':'')+'">'+esc(label)+'</span>'; }
-function sheetCommon(b, today){
-  const model = [b.maker, b.series].filter(Boolean).join(' ');
-  const spec = [b.motor ? (/^[0-9]+$/.test(b.motor)?b.motor+'モーター':b.motor) : '', b.width ? (/^[0-9]+$/.test(b.width)?b.width+'cm':b.width) : ''].filter(Boolean).join(' ／ ');
-  const len = String(b.length||'');
-  return `<table class="ps-tbl">
-    <tr><th>利用者名</th><td colspan="3" class="ps-big">${esc(b.pickupSubject||'')}</td></tr>
-    <tr><th>引き上げ日</th><td>${esc(b.pickupDate && b.pickupDate!=='未定' ? b.pickupDate : '')}</td>
-        <th style="width:16mm;">担当</th><td>${esc(b.pickupStaff||'')}</td></tr>
-    <tr><th>機種</th><td colspan="3"><b>${esc(model || b.bedName || '')}</b>${spec?('　'+esc(spec)):''}${b.orderNo?('<span style="float:right;font-size:8.5pt;">指図No '+esc(b.orderNo)+'</span>'):''}</td></tr>
-    ${b.address?('<tr><th>回収場所</th><td colspan="3">'+esc(b.address)+(b.tel?('　TEL '+esc(b.tel)):'')+'</td></tr>'):''}
-    <tr><th>仕様（長さ）</th><td colspan="3">${ck('ショート', len.indexOf('ショート')>=0)}${ck('レギュラー', len.indexOf('レギュラー')>=0)}${ck('ロング', len.indexOf('ロング')>=0)}</td></tr>
-  </table>`;
+function specText(b){
+  return [b.motor ? (/^[0-9]+$/.test(b.motor)?b.motor+'モーター':b.motor) : '', b.width ? (/^[0-9]+$/.test(b.width)?b.width+'cm':b.width) : ''].filter(Boolean).join(' ／ ');
+}
+// 付属品（柵・マット等）の一覧: 指図書の物件（ベッド以外）を1行ずつ
+function accessoryRows(b){
+  let list = Array.isArray(b.items) ? b.items.filter(it=>!it.isBed) : [];
+  if(!list.length) list = [{name:'サイドレール'},{name:'サイドレール'},{name:'介助バー（グリップ）'},{name:'マットレス'}];
+  list = list.concat([{name:''},{name:''}]).slice(0, Math.max(6, list.length));
+  return list.map(function(it){
+    const mat = /マット/.test(it.name||'') && !/止め/.test(it.name||'');
+    const cond = !it.name ? (ck('傷')+ck('さび')+ck('破損')+ck('汚れ'))
+               : mat ? (ck('汚れ')+ck('破れ')+ck('へたり')+ck('尿漏れ'))
+                     : (ck('傷')+ck('さび')+ck('破損'));
+    return `<tr><td>${esc(it.name||'')}</td><td class="c" style="font-weight:700;">${esc(it.stock||'')}</td><td class="c">□</td><td class="c">□</td><td>${cond}</td></tr>`;
+  }).join('');
 }
 function sheetHTML(b){
   b = b || {};
-  const NG = '異常なし';
+  const model = [b.maker, b.series].filter(Boolean).join(' ') || b.bedName || '';
+  const spec = specText(b);
+  const len = String(b.length||'');
+  const st = bedStock(b);
+  // 上半分：付属品（柵・マット）
   const top = `<div class="ps-half ps-top">
-    <div class="ps-head"><span class="ps-title">ベッド引き上げ指示書</span><span class="ps-tag">本体用（ベッドに貼付）</span></div>
-    ${sheetCommon(b)}
+    <div class="ps-head"><span class="ps-title">ベッド引き上げ指示書</span><span class="ps-tag">付属品用（柵・マットに添付）</span></div>
     <table class="ps-tbl">
-      <tr><th>ベッド本体</th><td>${ck('キズ')}${ck('さび')}${ck('汚れ')}${ck('尿漏れ')}${ck(NG)}</td></tr>
-      <tr><th>故障</th><td>${ck('無')}${ck('有')}（　　　　　　　　　　　　　　　　　　）</td></tr>
-      <tr><th>破損</th><td>${ck('無')}${ck('有')}（　　　　　　　　　　　　　　　　　　）</td></tr>
-      <tr><th>マットレス</th><td>${ck('汚れ')}${ck('破れ')}${ck('へたり')}${ck('尿漏れ')}${ck(NG)}${ck('マットなし')}</td></tr>
-      <tr><th>付属品</th><td>${(function(){ const ac = accessorySummary(b);
-        return ac.length ? ac.map(a=>ck(a.name+' ×'+a.qty)).join('') + '<br>' + ck('全部そろっている') + ck('不足あり（　　　　　　　　）')
-                         : ck('全部そろっている') + ck('不足あり（　　　　　　　　　　　　）'); })()}</td></tr>
+      <tr><th>利用者名</th><td class="ps-big" style="font-size:14pt;">${esc(b.pickupSubject||'')}</td>
+          <th style="width:16mm;">指図No</th><td style="width:34mm;">${esc(b.orderNo||'')}</td></tr>
+      <tr><th>引き上げ日</th><td>${esc(b.pickupDate && b.pickupDate!=='未定' ? b.pickupDate : '')}</td>
+          <th>担当</th><td>${esc(b.pickupStaff||'')}</td></tr>
+      <tr><th>回収場所</th><td colspan="3">${esc(b.address||'')}${b.tel?('　TEL '+esc(b.tel)):''}</td></tr>
+      <tr><th>ベッド</th><td colspan="3"><b style="font-size:11pt;">${esc(model)}</b>${spec?('　'+esc(spec)):''}${st.stock?('　在庫番号 <b>'+esc(st.stock)+'</b>'):''}</td></tr>
     </table>
+    <table class="ps-tbl ps-list">
+      <tr><th style="width:auto;">付属品（物件）</th><th style="width:16mm;text-align:center;">在庫番号</th><th style="width:8mm;text-align:center;">有</th><th style="width:8mm;text-align:center;">無</th><th style="width:auto;">状態</th></tr>
+      ${accessoryRows(b)}
+    </table>
+    <div style="margin:0 0 1.2mm;font-size:10pt;">${ck('付属品すべてそろっている')}${ck('不足あり（　　　　　　　　　　）')}</div>
     <div style="font-size:8.5pt;font-weight:700;margin-bottom:0.6mm;">特記事項</div>
     <div class="ps-note">${esc(String(b.memo||'').replace(/^指図No[0-9A-Za-z-]+( ／ )?/,''))}</div>
-    <div class="ps-sign"><div>引き上げ者：</div><div>確認日：　　月　　日</div><div>清掃担当：</div></div>
   </div>`;
+  // 下半分：ベッド本体＋ベッドパーツ
   const rows = PARTS_LIST.map(p=>`<tr><td>${esc(p[0])}</td><td class="c">${esc(p[1])}</td><td class="c">□</td><td class="c">□</td><td>${ck('傷')}${ck('さび')}${ck('破損')}</td></tr>`).join('');
-  const bottom = `<div class="ps-half">
-    <div class="ps-head"><span class="ps-title">ベッドパーツ確認票</span><span class="ps-tag">ベッドパーツ袋用（袋に同封）</span></div>
+  const bottom = `<div class="ps-half ps-bottom">
+    <div class="ps-head"><span class="ps-title">ベッド本体・パーツ確認票</span><span class="ps-tag">ベッド本体用（ベッド・パーツ袋に）</span></div>
     <table class="ps-tbl">
       <tr><th>利用者名</th><td class="ps-big">${esc(b.pickupSubject||'')}</td>
-          <th style="width:14mm;">機種</th><td>${esc([b.maker,b.series].filter(Boolean).join(' '))}</td></tr>
+          <th style="width:16mm;">在庫番号</th><td style="width:34mm;font-size:14pt;font-weight:800;">${esc(st.stock)}</td></tr>
+      <tr><th>機種</th><td colspan="3"><span style="font-size:14pt;font-weight:800;">${esc(model)}</span>${spec?('<span style="font-size:11pt;font-weight:700;">　'+esc(spec)+'</span>'):''}</td></tr>
+      <tr><th>仕様（長さ）</th><td colspan="3">${ck('ショート', len.indexOf('ショート')>=0)}${ck('レギュラー', len.indexOf('レギュラー')>=0)}${ck('ロング', len.indexOf('ロング')>=0)}<b style="font-size:10.5pt;border:1.5px solid #000;padding:0 1.5mm;margin-left:1mm;">清掃後はレギュラーに戻す！</b><b style="font-size:10.5pt;border:1.5px solid #000;padding:0 1.5mm;margin-left:1.5mm;">定位置に戻す！</b></td></tr>
+      <tr><th>ベッド本体</th><td colspan="3">${ck('キズ')}${ck('さび')}${ck('汚れ')}${ck('尿漏れ')}${ck('異常なし')}</td></tr>
+      <tr><th>故障・破損</th><td colspan="3">故障 ${ck('無')}${ck('有')}（　　　　　　）　破損 ${ck('無')}${ck('有')}（　　　　　　）</td></tr>
     </table>
-    <table class="ps-tbl">
-      <tr><th style="width:auto;">品名</th><th style="width:10mm;text-align:center;">数</th><th style="width:9mm;text-align:center;">有</th><th style="width:9mm;text-align:center;">無</th><th style="width:auto;">状態</th></tr>
+    <table class="ps-tbl ps-list">
+      <tr><th style="width:auto;">ベッドパーツ</th><th style="width:9mm;text-align:center;">数</th><th style="width:8mm;text-align:center;">有</th><th style="width:8mm;text-align:center;">無</th><th style="width:auto;">状態</th></tr>
       ${rows}
     </table>
-    <div style="font-size:8.5pt;font-weight:700;margin-bottom:0.6mm;">特記事項（不足品・破損の内容など）</div>
-    <div class="ps-note" style="min-height:11mm;"></div>
+    <div class="ps-sign"><div>引き上げ者：</div><div>確認日：　　月　　日</div><div>清掃担当：</div></div>
   </div>`;
   return `<div class="ps-page">${top}<div class="ps-cut">✂ 切り取り線</div>${bottom}</div>`;
 }
@@ -1621,7 +1642,7 @@ function printPickupList(){
       <td style="white-space:nowrap;">${esc(b.pickupStaff||'')}</td>
       <td><b style="font-size:10.5pt;">${esc(b.pickupSubject||'')}</b>${b.orderNo?('<br><span style="font-size:8pt;">指図No '+esc(b.orderNo)+'</span>'):''}</td>
       <td>${esc(b.address||'')}${b.tel?('<br>TEL '+esc(b.tel)):''}</td>
-      <td><b>${esc(model)}</b>${spec?('<br>'+esc(spec)):''}</td>
+      <td><b style="font-size:10.5pt;">${esc(model)}</b>${spec?('<br>'+esc(spec)):''}${bedStock(b).stock?('<br>在庫No <b>'+esc(bedStock(b).stock)+'</b>'):''}</td>
       <td style="font-size:8.5pt;">${ac}</td>
       <td style="font-size:8.5pt;">${esc(b.pickupStatus||'')}${memo?('<br>'+esc(memo)):''}</td>
       <td style="text-align:center;font-size:12pt;">□</td>
