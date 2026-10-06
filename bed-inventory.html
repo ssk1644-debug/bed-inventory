@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.8.9 | アスポート</title>
+<title>ベッド在庫管理 v3.9.1 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -175,6 +175,9 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   #print-area{display:block !important;}
 }
 .ps-page{width:186mm;height:270mm;margin:0 auto;display:flex;flex-direction:column;justify-content:center;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',sans-serif;line-height:1.3;}
+.gs-page{width:186mm;margin:0 auto;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',sans-serif;line-height:1.3;font-size:9pt;}
+.gs-page:last-child{page-break-after:auto;break-after:auto;}
+.gs-page .ps-list th,.gs-page .ps-list td{padding:1.6mm 1.5mm !important;font-size:9.5pt;}
 .ps-page:last-child{page-break-after:auto;break-after:auto;}
 .ps-half{height:128mm;display:flex;flex-direction:column;box-sizing:border-box;padding:1mm 0.5mm;overflow:hidden;font-size:9pt;}
 .ps-cut{height:8mm;display:flex;align-items:center;gap:2mm;font-size:8pt;color:#555;}
@@ -213,7 +216,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.8.9</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.1</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -356,7 +359,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.8.9</b><br>
+      バージョン: <b>v3.9.1</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -475,12 +478,14 @@ main{max-width:860px;margin:0 auto;padding:14px;}
       <div class="field"><label>長さ</label><select id="im-length"></select></div>
       <div class="field"><label>指図No</label><input type="text" id="im-no" readonly style="background:var(--surface);"></div>
     </div>
-    <div class="field"><label>物件（指図書の内容）</label><div id="im-items" style="font-size:12px;line-height:1.7;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 9px;max-height:150px;overflow:auto;"></div></div>
+    <div class="field"><label>物件（指図書の内容）　<span style="font-weight:400;color:var(--gray);">他社の物は「他社」にチェック</span></label><div id="im-items" style="font-size:12px;line-height:1.9;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 9px;max-height:190px;overflow:auto;"></div>
+      <div id="im-plan" style="font-size:12px;margin-top:6px;line-height:1.6;"></div></div>
     <div class="field"><label>メモ（指示書の特記事項に印刷）</label><textarea id="im-memo" rows="3" style="width:100%;border:1px solid var(--border2);border-radius:8px;padding:7px;font-size:13px;font-family:inherit;"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-gray" onclick="importSkip()">スキップ</button>
-      <button class="btn btn-gray" onclick="importSave(true)">登録して印刷</button>
-      <button class="btn btn-blue" onclick="importSave(false)">登録</button>
+      <button class="btn btn-gray" id="im-printonly" onclick="importPrintOnly()">印刷のみ</button>
+      <button class="btn btn-gray" id="im-saveprint" onclick="importSave(true)">登録して印刷</button>
+      <button class="btn btn-blue" id="im-save" onclick="importSave(false)">登録</button>
     </div>
   </div>
 </div>
@@ -494,7 +499,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.8.9';
+const APP_VERSION = 'v3.9.1';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
@@ -1828,9 +1833,7 @@ function importNext(){
   fillSelect('im-width', WIDTH_OPTS, g.width, true);
   fillSelect('im-length', LENGTH_OPTS, '', true);
   document.getElementById('im-no').value = d.orderNo || '';
-  document.getElementById('im-items').innerHTML = d.items.length
-    ? d.items.map(it=>(it.isBed?'🛏 <b>':'・')+esc(it.name)+(it.isBed?'</b>':'')+' <span style="color:var(--gray)">'+esc(it.code)+(it.stock?(' #'+esc(it.stock)):'')+'</span>').join('<br>')
-    : '（物件なし）';
+  renderImportItems();
   document.getElementById('im-memo').value = d.remarks || '';
   const same = findSameName(d.name).filter(b=>!b.orderNo || b.orderNo===d.orderNo);
   const tw = document.getElementById('im-target-wrap'), ts = document.getElementById('im-target');
@@ -1858,11 +1861,135 @@ function imMakerChanged(cur){
   const mk = document.getElementById('im-maker').value;
   fillSelect('im-series', mk && MASTER[mk] ? Object.keys(MASTER[mk]) : [], typeof cur==='string'?cur:'', true);
 }
+
+/* ---- 物件の振り分け（ベッド関連／その他／他社） ---- */
+function isBedRelated(name){
+  const n = String(name||'');
+  if(/車いす|車椅子|歩行|杖|スロープ|手すり|リフト|クッション|移乗|徘徊|シャワー|トイレ/.test(n)) return false;
+  return /ベッド|サイドレール|レール|柵|介助バー|グリップ|マット|テーブル|スイッチ/.test(n);
+}
+function itemKind(it){
+  if(it.other) return 'other';
+  if(it.isBed || isBedRelated(it.name)) return 'bed';
+  return 'misc';
+}
+function importPlan(d){
+  const own = d.items.find(it=>it.isBed && !it.other);
+  // 自社ベッドがないときは、柵・マット等もベッド以外の回収指示書に回す
+  return {
+    hasOwnBed: !!own,
+    bed:   own ? d.items.filter(it=>itemKind(it)==='bed') : [],
+    misc:  d.items.filter(it=>itemKind(it)==='misc' || (!own && itemKind(it)==='bed')),
+    other: d.items.filter(it=>itemKind(it)==='other')
+  };
+}
+function renderImportItems(){
+  const d = importQueue[0]; if(!d) return;
+  const tag = {bed:'<span class="badge b-green" style="font-size:10px;">ベッド</span>', misc:'<span class="badge" style="font-size:10px;background:var(--surface);border:1px solid var(--border2);">その他</span>', other:'<span class="badge b-red" style="font-size:10px;">他社</span>'};
+  document.getElementById('im-items').innerHTML = d.items.length
+    ? d.items.map((it,i)=>`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" data-imother="${i}" ${it.other?'checked':''}> <span style="font-size:10px;color:var(--gray);width:24px;">他社</span>
+        ${tag[itemKind(it)]} ${it.isBed?'🛏 <b>':''}${esc(it.name)}${it.isBed?'</b>':''} <span style="color:var(--gray)">${esc(it.stock && !it.other?('#'+it.stock):'')}</span></label>`).join('')
+    : '（物件なし）';
+  const pl = importPlan(d);
+  const lines = [];
+  if(pl.hasOwnBed) lines.push('✅ <b>引き上げ予定に登録</b>：ベッド＋付属品 ' + (pl.bed.length-1) + '点（ベッド指示書を印刷）');
+  else lines.push('⚠️ 自社のベッドがないので<b>登録はしません</b>（印刷のみ）');
+  if(pl.misc.length) lines.push('🖨 ベッド以外の回収品 ' + pl.misc.length + '点 → 回収指示書を印刷');
+  if(pl.other.length) lines.push('🖨 他社品 ' + pl.other.length + '点 → 他社品の回収指示書（返却用＋社内控え）を印刷');
+  document.getElementById('im-plan').innerHTML = lines.join('<br>');
+  document.getElementById('im-save').disabled = !pl.hasOwnBed;
+  document.getElementById('im-saveprint').disabled = !pl.hasOwnBed;
+  document.getElementById('im-printonly').style.display = pl.hasOwnBed ? 'none' : '';
+}
+document.addEventListener('change', function(ev){
+  const t = ev.target;
+  if(!t || !t.dataset || t.dataset.imother == null) return;
+  const d = importQueue[0]; if(!d) return;
+  d.items[Number(t.dataset.imother)].other = t.checked;
+  renderImportItems();
+});
+function importHeader(d){
+  return {
+    subject: document.getElementById('im-subject').value.trim() || (d.name ? d.name+' 様' : ''),
+    staff: document.getElementById('im-staff').value,
+    date: document.getElementById('im-date').value.trim(),
+    address: d.address, tel: d.tel,
+    memo: document.getElementById('im-memo').value.trim()
+  };
+}
+/* ---- ベッド以外／他社品の回収指示書 ---- */
+function hdrTable(h){
+  return `<table class="ps-tbl">
+    <tr><th>利用者名</th><td colspan="3" class="ps-big" style="font-size:13pt;">${esc(h.subject||'')}</td></tr>
+    <tr><th>引き上げ日</th><td>${esc(h.date||'')}</td><th style="width:14mm;">担当</th><td style="width:34mm;">${esc(h.staff||'')}</td></tr>
+    <tr><th>回収場所</th><td colspan="3">${esc(h.address||'')}${h.tel?('　TEL '+esc(h.tel)):''}</td></tr>
+  </table>`;
+}
+function itemRows(items, minRows, cond, noStock){
+  let list = items.slice();
+  while(list.length < minRows) list.push({name:''});
+  return list.map(it=>`<tr><td>${esc(it.name||'')}</td>${noStock?'':`<td class="c" style="font-weight:700;">${esc(it.stock||'')}</td>`}<td class="c">□</td><td class="c">□</td><td>${cond}</td></tr>`).join('');
+}
+function miscSheetHTML(h, items){
+  const cond = ck('傷')+ck('汚れ')+ck('破損')+ck('故障');
+  return `<div class="gs-page">
+    <div class="ps-head"><span class="ps-title">回収指示書（ベッド以外）</span><span class="ps-tag">社内用</span></div>
+    ${hdrTable(h)}
+    <table class="ps-tbl ps-list">
+      <tr><th style="width:auto;">回収品</th><th style="width:16mm;text-align:center;">在庫番号</th><th style="width:8mm;text-align:center;">有</th><th style="width:8mm;text-align:center;">無</th><th style="width:auto;">状態</th></tr>
+      ${itemRows(items, Math.max(10, items.length+2), cond)}
+    </table>
+    <div style="margin:0 0 1.2mm;font-size:10pt;">${ck('すべてそろっている')}${ck('欠品あり（　　　　　　　　　　　　）')}</div>
+    <div class="ps-lbl">特記事項</div>
+    <div class="ps-lines" style="flex:none;height:33mm;"><div class="tx">${esc(h.memo||'')}</div>${'<div class="ln"></div>'.repeat(6)}</div>
+    <div class="ps-sign"><div>引き上げ者：</div><div>確認日：　　月　　日</div><div>確認者：</div></div>
+  </div>`;
+}
+function otherHalfHTML(h, items, copy){
+  const cond = '故障 '+ck('無')+ck('有')+'　破損 '+ck('無')+ck('有');
+  return `<div class="ps-half">
+    <div class="ps-head"><span class="ps-title">他社レンタル品 回収指示書</span><span class="ps-tag">${copy}</span></div>
+    ${hdrTable(h)}
+    <table class="ps-tbl"><tr><th>返却先</th><td></td><th style="width:14mm;">返却日</th><td style="width:34mm;">　　月　　日</td></tr></table>
+    <table class="ps-tbl ps-list">
+      <tr><th style="width:auto;">品名</th><th style="width:8mm;text-align:center;">有</th><th style="width:12mm;text-align:center;">無(欠品)</th><th style="width:auto;">状態</th></tr>
+      ${itemRows(items, Math.max(4, items.length), cond, true)}
+    </table>
+    <div class="ps-lbl">欠品・故障・破損の内容</div>
+    <div class="ps-lines" style="min-height:0;">${'<div class="ln"></div>'.repeat(8)}</div>
+    <div class="ps-sign"><div>引き上げ者：</div><div>確認日：　　月　　日</div><div>確認者：</div></div>
+  </div>`;
+}
+function otherSheetHTML(h, items){
+  return `<div class="ps-page">${otherHalfHTML(h, items, '返却用（他社へ）')}<div class="ps-cut">✂ 切り取り線</div>${otherHalfHTML(h, items, '社内控え')}</div>`;
+}
+function printImportDocs(d, rec){
+  const pl = importPlan(d), h = importHeader(d);
+  const pages = [];
+  if(rec) pages.push(sheetHTML(rec));
+  if(pl.misc.length) pages.push(miscSheetHTML(h, pl.misc));
+  if(pl.other.length) pages.push(otherSheetHTML(h, pl.other));
+  if(!pages.length){ toast('印刷するものがありません','orange'); return; }
+  document.getElementById('print-area').innerHTML = pages.join('');
+  setTimeout(function(){ window.print(); }, 50);
+}
+function importPrintOnly(){
+  const d = importQueue[0]; if(!d) return;
+  closeModal('modal-import');
+  printImportDocs(d, null);
+  importQueue.shift();
+  setTimeout(importNext, 800);
+}
+
 function importSkip(){ importQueue.shift(); importNext(); }
 function importSave(andPrint){
   const d = importQueue[0]; if(!d) return;
   const subject = document.getElementById('im-subject').value.trim();
   if(!subject){ toast('件名を入力してください','red'); return; }
+  const pl = importPlan(d);
+  if(!pl.hasOwnBed){ toast('自社のベッドがないので登録できません（印刷のみ）','orange'); return; }
+  const ownItems = pl.bed;
   const mk = document.getElementById('im-maker').value, sr = document.getElementById('im-series').value;
   // 商品コード→機種の対応を覚える（次回から自動選択）
   if(d.bed && d.bed.code && mk && sr && MASTER[mk] && MASTER[mk][sr]){
@@ -1893,12 +2020,12 @@ function importSave(andPrint){
     const oldMemo = String(ex.memo||'').replace(/^指図No[0-9A-Za-z-]+( ／ )?/,'');
     ex.memo = [d.orderNo?('指図No'+d.orderNo):'', oldMemo, (um && oldMemo.indexOf(um)<0)?um:''].filter(Boolean).join(' ／ ');
     ex.orderNo = d.orderNo; ex.address = d.address; ex.tel = d.tel;
-    ex.bedName = d.bed ? d.bed.name : ''; ex.items = d.items;
+    ex.bedName = d.bed ? d.bed.name : ''; ex.items = ownItems;
     ex.updatedAt = now;
     scheduleSave(); renderAll();
     importQueue.shift();
     toast('📄 ' + subject + ' の予定に指図書の内容を入れました');
-    if(andPrint){ closeModal('modal-import'); printSheets([ex]); setTimeout(importNext, 800); }
+    if(andPrint){ closeModal('modal-import'); printImportDocs(d, ex); setTimeout(importNext, 800); }
     else importNext();
     return;
   }
@@ -1916,14 +2043,14 @@ function importSave(andPrint){
     state:'', cost:'', note:'',
     orderNo: d.orderNo, address: d.address, tel: d.tel,
     bedName: d.bed ? d.bed.name : '',
-    items: d.items,
+    items: ownItems,
     createdAt: now, updatedAt: now
   };
   beds.push(b);
   scheduleSave(); renderAll();
   importQueue.shift();
   toast('🚚 引き上げ予定に追加しました');
-  if(andPrint){ closeModal('modal-import'); printSheets([b]); setTimeout(importNext, 800); }
+  if(andPrint){ closeModal('modal-import'); printImportDocs(d, b); setTimeout(importNext, 800); }
   else importNext();
 }
 
