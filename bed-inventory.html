@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.9.1 | アスポート</title>
+<title>ベッド在庫管理 v3.9.2 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -174,12 +174,12 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   body > *:not(#print-area){display:none !important;}
   #print-area{display:block !important;}
 }
-.ps-page{width:186mm;height:270mm;margin:0 auto;display:flex;flex-direction:column;justify-content:center;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',sans-serif;line-height:1.3;}
+.ps-page{width:186mm;height:277mm;margin:0 auto;display:flex;flex-direction:column;justify-content:center;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',sans-serif;line-height:1.3;}
 .gs-page{width:186mm;margin:0 auto;page-break-after:always;break-after:page;color:#000;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic','Meiryo',sans-serif;line-height:1.3;font-size:9pt;}
 .gs-page:last-child{page-break-after:auto;break-after:auto;}
 .gs-page .ps-list th,.gs-page .ps-list td{padding:1.6mm 1.5mm !important;font-size:9.5pt;}
 .ps-page:last-child{page-break-after:auto;break-after:auto;}
-.ps-half{height:128mm;display:flex;flex-direction:column;box-sizing:border-box;padding:1mm 0.5mm;overflow:hidden;font-size:9pt;}
+.ps-half{height:134.5mm;display:flex;flex-direction:column;box-sizing:border-box;padding:1mm 0.5mm;overflow:hidden;font-size:9pt;}
 .ps-cut{height:8mm;display:flex;align-items:center;gap:2mm;font-size:8pt;color:#555;}
 .ps-cut::before,.ps-cut::after{content:"";flex:1;border-top:1.5px dashed #555;}
 .ps-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:0.8mm;margin-bottom:1.5mm;}
@@ -196,9 +196,10 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 .ps-note{border:1px solid #000;min-height:9mm;padding:1mm 1.5mm;white-space:pre-wrap;}
 .ps-sign{display:flex;gap:3mm;margin-top:1.5mm;font-size:8.5pt;}
 .ps-list th,.ps-list td{padding:0.65mm 1.5mm !important;font-size:8.5pt;}
-.ps-top{height:120mm;}
+.ps-top{height:134.5mm;}
 .ps-top .ps-lines{min-height:0;}
-.ps-bottom{padding-top:4mm;height:141mm;}
+.ps-bottom{padding-top:3mm;height:134.5mm;}
+.ps-bottom .ps-list th,.ps-bottom .ps-list td{padding:0.5mm 1.5mm !important;}
 .ps-bottom .ps-lines{min-height:0;}
 .ps-lines{flex:1;min-height:8mm;margin-bottom:2mm;overflow:hidden;position:relative;}
 .ps-lines .ln{height:6.5mm;border-bottom:1px solid #000;box-sizing:border-box;}
@@ -216,7 +217,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.1</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.2</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -359,7 +360,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.9.1</b><br>
+      バージョン: <b>v3.9.2</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -499,7 +500,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.9.1';
+const APP_VERSION = 'v3.9.2';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
