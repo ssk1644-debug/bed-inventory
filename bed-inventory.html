@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.9.2 | アスポート</title>
+<title>ベッド在庫管理 v3.9.3 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -217,7 +217,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.2</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.3</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -360,7 +360,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.9.2</b><br>
+      バージョン: <b>v3.9.3</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -500,7 +500,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.9.2';
+const APP_VERSION = 'v3.9.3';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
@@ -1770,17 +1770,30 @@ function parseKaishu(lines){
   }
   if(iRem>=0) r.remarks = lines.slice(iRem+1, iEnd>iRem ? iEnd : lines.length).join(' ').trim();
   // ベッド本体を判定
-  const bed = r.items.find(it=>/ベッド/.test(it.name) && !/マット|レール|柵|グリップ|バー|テーブル|スイッチ/.test(it.name));
+  // 在庫番号がある物＝自社、ない物＝他社
+  r.items.forEach(function(it){ it.other = !it.stock; });
+  const bed = r.items.find(it=>looksLikeBed(it)) || null;
   if(bed) bed.isBed = true;
   r.bed = bed || null;
   return r;
+}
+// ベッド本体らしいか（名前に「ベッド」がなくても機種名・モーター数・覚えた商品コードで判定）
+function looksLikeBed(it){
+  const n = String(it.name||'');
+  if(/マット|レール|柵|グリップ|バー|テーブル|スイッチ|クッション|手すり|車いす|車椅子|歩行|スロープ/.test(n)) return false;
+  if(/ベッド/.test(n)) return true;
+  if(/[0-9]\s*(?:M(?![a-z])|モーター)/i.test(n)) return true;
+  return Object.keys(MASTER).some(mk=>Object.keys(MASTER[mk]).some(function(sr){
+    const info = MASTER[mk][sr] || {};
+    return (info.codes||[]).indexOf(it.code) >= 0 || (sr.length >= 2 && n.indexOf(sr) >= 0);
+  }));
 }
 // 商品コード・商品名から機種マスターを探す（取り込み時に覚えた対応も使う）
 function guessModel(bed){
   const out = {maker:'', series:'', motor:'', width:''};
   if(!bed) return out;
   const nm = bed.name || '';
-  const mm = nm.match(/([0-9])\s*M(?![a-z])/i); if(mm) out.motor = mm[1];
+  const mm = nm.match(/([0-9])\s*(?:M(?![a-z])|モーター)/i); if(mm) out.motor = mm[1];
   const mw = nm.match(/([0-9]{2,3})\s*幅/); if(mw) out.width = mw[1];
   Object.keys(MASTER).some(function(mk){
     return Object.keys(MASTER[mk]).some(function(sr){
@@ -1867,7 +1880,7 @@ function imMakerChanged(cur){
 function isBedRelated(name){
   const n = String(name||'');
   if(/車いす|車椅子|歩行|杖|スロープ|手すり|リフト|クッション|移乗|徘徊|シャワー|トイレ/.test(n)) return false;
-  return /ベッド|サイドレール|レール|柵|介助バー|グリップ|マット|テーブル|スイッチ/.test(n);
+  return /ベッド|サイドレール|レール|柵|介助バー|グリップ|マット|テーブル|スイッチ/.test(n) || /[0-9]{2,3}\s*幅/.test(n);
 }
 function itemKind(it){
   if(it.other) return 'other';
@@ -1889,8 +1902,8 @@ function renderImportItems(){
   const tag = {bed:'<span class="badge b-green" style="font-size:10px;">ベッド</span>', misc:'<span class="badge" style="font-size:10px;background:var(--surface);border:1px solid var(--border2);">その他</span>', other:'<span class="badge b-red" style="font-size:10px;">他社</span>'};
   document.getElementById('im-items').innerHTML = d.items.length
     ? d.items.map((it,i)=>`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-        <input type="checkbox" data-imother="${i}" ${it.other?'checked':''}> <span style="font-size:10px;color:var(--gray);width:24px;">他社</span>
-        ${tag[itemKind(it)]} ${it.isBed?'🛏 <b>':''}${esc(it.name)}${it.isBed?'</b>':''} <span style="color:var(--gray)">${esc(it.stock && !it.other?('#'+it.stock):'')}</span></label>`).join('')
+        <input type="checkbox" data-imother="${i}" ${it.other?'checked':''}> <span style="font-size:10px;color:var(--gray);white-space:nowrap;">他社</span>
+        <span style="white-space:nowrap;">${tag[itemKind(it)]}</span> ${it.isBed?'🛏 <b>':''}${esc(it.name)}${it.isBed?'</b>':''} <span style="color:var(--gray)">${esc(it.stock && !it.other?('#'+it.stock):'')}</span></label>`).join('')
     : '（物件なし）';
   const pl = importPlan(d);
   const lines = [];
