@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ベッド在庫管理 v3.9.3 | アスポート</title>
+<title>ベッド在庫管理 v3.9.4 | アスポート</title>
 <style>
 :root{
   --bg:#f0f4f8; --white:#fff; --surface:#f8fafc;
@@ -217,7 +217,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
 </div>
 <header>
   <div class="hrow">
-    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.3</small></div>
+    <div class="logo">🛏 アスポート ベッド在庫管理<small>v3.9.4</small></div>
     <div class="hright">
       <span id="hdate"></span>
       <span id="sync-status">--</span>
@@ -360,7 +360,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
   <div class="card">
     <div style="font-weight:700;font-size:13px;margin-bottom:8px;">アプリ情報</div>
     <div class="card-meta">
-      バージョン: <b>v3.9.3</b><br>
+      バージョン: <b>v3.9.4</b><br>
       データ保存先: Googleスプレッドシート「アスポートベッド管理」<br>
       通信方式: JSONP（読込）+ POST（保存）<br>
       担当者: 佐々木 / 荒木 / 福田 / 三井 / 郷坪 / 沖藤
@@ -500,7 +500,7 @@ main{max-width:860px;margin:0 auto;padding:14px;}
    0) 定数・状態変数（★必ずスクリプト先頭で宣言する★）
    ===================================================== */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDAuuI2NMxmOQrplXaHPWugmLf_4mP6Mu6KLQEa6SIrIswetuGoQ8pgYpgtrmwKDXqfg/exec';
-const APP_VERSION = 'v3.9.3';
+const APP_VERSION = 'v3.9.4';
 const STAFF = ['佐々木','荒木','福田','三井','郷坪','沖藤'];
 const CLEAN_STAFF = ['岡田','山口','坂本','中村','難波','郷坪','宮原','小坂'];
 const DATE_CHIPS = ['今日','明日','今週中','来週前半','来週後半','未定'];
@@ -1039,6 +1039,8 @@ function renderPickup(){
         ${bedStock(b).stock?('<br>🏷 在庫番号 <b>'+esc(bedStock(b).stock)+'</b>'):''}
         ${b.address?('<br>📍 '+esc(b.address)+(b.tel?(' ／ ☎ '+esc(b.tel)):'')):''}
         ${accessorySummary(b).length?('<br>🧩 '+accessorySummary(b).map(a=>esc(a.name)+'×'+a.qty).join('、')):''}
+        ${(b.miscItems||[]).length?('<br>📦 ベッド以外 '+b.miscItems.length+'点（別伝票）'):''}
+        ${(b.otherItems||[]).length?('<br><b style="color:var(--red)">🔁 他社品 '+b.otherItems.length+'点（別伝票）</b>'):''}
       </div>
     </div>
     <div class="cbtns">
@@ -1629,9 +1631,18 @@ function sheetHTML(b){
   </div>`;
   return `<div class="ps-page">${top}<div class="ps-cut">✂ 切り取り線</div>${bottom}</div>`;
 }
+// 1件分の印刷物：ベッド指示書＋（あれば）ベッド以外の回収指示書＋他社品の回収指示書
+function docsForRecord(b){
+  const pages = [sheetHTML(b)];
+  if(!b || !b.id) return pages.join('');
+  const h = {subject:b.pickupSubject, staff:b.pickupStaff, date:(b.pickupDate && b.pickupDate!=='未定') ? b.pickupDate : '', address:b.address, tel:b.tel, memo:''};
+  if(Array.isArray(b.miscItems) && b.miscItems.length) pages.push(miscSheetHTML(h, b.miscItems));
+  if(Array.isArray(b.otherItems) && b.otherItems.length) pages.push(otherSheetHTML(h, b.otherItems));
+  return pages.join('');
+}
 function printSheets(list){
   const area = document.getElementById('print-area');
-  area.innerHTML = list.map(sheetHTML).join('');
+  area.innerHTML = list.map(docsForRecord).join('');
   setTimeout(function(){ window.print(); }, 50);
 }
 
@@ -1981,9 +1992,11 @@ function otherSheetHTML(h, items){
 function printImportDocs(d, rec){
   const pl = importPlan(d), h = importHeader(d);
   const pages = [];
-  if(rec) pages.push(sheetHTML(rec));
-  if(pl.misc.length) pages.push(miscSheetHTML(h, pl.misc));
-  if(pl.other.length) pages.push(otherSheetHTML(h, pl.other));
+  if(rec) pages.push(docsForRecord(rec));
+  else {
+    if(pl.misc.length) pages.push(miscSheetHTML(h, pl.misc));
+    if(pl.other.length) pages.push(otherSheetHTML(h, pl.other));
+  }
   if(!pages.length){ toast('印刷するものがありません','orange'); return; }
   document.getElementById('print-area').innerHTML = pages.join('');
   setTimeout(function(){ window.print(); }, 50);
@@ -2035,6 +2048,7 @@ function importSave(andPrint){
     ex.memo = [d.orderNo?('指図No'+d.orderNo):'', oldMemo, (um && oldMemo.indexOf(um)<0)?um:''].filter(Boolean).join(' ／ ');
     ex.orderNo = d.orderNo; ex.address = d.address; ex.tel = d.tel;
     ex.bedName = d.bed ? d.bed.name : ''; ex.items = ownItems;
+    ex.miscItems = pl.misc; ex.otherItems = pl.other;
     ex.updatedAt = now;
     scheduleSave(); renderAll();
     importQueue.shift();
@@ -2058,6 +2072,7 @@ function importSave(andPrint){
     orderNo: d.orderNo, address: d.address, tel: d.tel,
     bedName: d.bed ? d.bed.name : '',
     items: ownItems,
+    miscItems: pl.misc, otherItems: pl.other,
     createdAt: now, updatedAt: now
   };
   beds.push(b);
